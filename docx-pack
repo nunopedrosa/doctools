@@ -1,0 +1,78 @@
+#!/bin/bash
+set -euo pipefail
+
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $(basename "$0") original.docx unpacked-folder" >&2
+    exit 2
+fi
+
+original="$1"
+src="${2%/}"
+
+if [ ! -f "$original" ]; then
+    echo "Error: original DOCX not found: $original" >&2
+    exit 1
+fi
+
+if [ ! -d "$src/word/media" ]; then
+    echo "Error: word/media not found in: $src" >&2
+    exit 1
+fi
+
+# Convert everything to absolute paths before changing directory
+original="$(cd "$(dirname "$original")" && pwd)/$(basename "$original")"
+src="$(cd "$src" && pwd)"
+
+original_dir="$(dirname "$original")"
+original_name="$(basename "$original")"
+stem="${original_name%.*}"
+
+output="$original_dir/${stem}-compressed.docx"
+tmp="$original_dir/.${stem}-compressed.$$.docx"
+
+if [ -e "$output" ]; then
+    echo "Error: output already exists: $output" >&2
+    echo "Remove or rename it first." >&2
+    exit 1
+fi
+
+trap 'rm -f "$tmp"' EXIT
+
+echo "Copying original DOCX..."
+cp "$original" "$tmp"
+
+echo "Replacing images..."
+
+(
+    cd "$src"
+
+    find word/media -type f \
+        ! -name '.DS_Store' \
+        ! -name '._*' \
+        -print0 |
+    while IFS= read -r -d '' image; do
+        echo "  $image"
+        zip -q "$tmp" "$image"
+    done
+)
+
+echo "Verifying archive..."
+
+if ! unzip -tq "$tmp" >/dev/null; then
+    echo "Error: ZIP verification failed." >&2
+    exit 1
+fi
+
+mv "$tmp" "$output"
+trap - EXIT
+
+echo
+echo "Created:"
+echo "  $output"
+
+original_size=$(stat -f%z "$original")
+new_size=$(stat -f%z "$output")
+
+echo
+echo "Original:   $((original_size / 1024 / 1024)) MB"
+echo "Compressed: $((new_size / 1024 / 1024)) MB"
