@@ -38,7 +38,7 @@ function select(selected){
 }
 $('file').addEventListener('change',e=>select(e.target.files[0]));
 $('optimize').addEventListener('click',()=>{if(busy||locked||!file)return;release();setBusy(true);$('progress').hidden=false;$('progress').removeAttribute('value');status('Optimizing images…');jobs.optimize();});
-$('cancel').addEventListener('click',()=>{jobs.cancel();setBusy(false);$('optimize').disabled=true;$('progress').hidden=true;$('dropzone').hidden=false;status('Cancelled. Select a document to start again.');});
+$('cancel').addEventListener('click',()=>{jobs.cancel();$('file').value='';setBusy(false);$('optimize').disabled=true;$('progress').hidden=true;$('dropzone').hidden=false;status('Cancelled. Select a document to start again.');});
 $('clear').addEventListener('click',()=>{jobs.clear();release();file=null;setBusy(false);$('file').value='';$('document').hidden=true;$('error').hidden=true;$('dropzone').hidden=false;status('Ready when you are.');$('file').focus();});
 for(const type of ['dragenter','dragover'])$('dropzone').addEventListener(type,e=>{e.preventDefault();$('dropzone').classList.add('drag');});
 $('dropzone').addEventListener('dragleave',()=>$('dropzone').classList.remove('drag'));

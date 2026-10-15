@@ -20,3 +20,14 @@ The C wrapper reads existing quantized DCT coefficients and writes those same co
 The PNG adapter uses only the single-threaded OxiPNG module with alpha optimization disabled. It conservatively refuses sample/palette representation changes and restores all original non-IDAT chunks byte-for-byte, preserving their order. This can yield smaller savings than more permissive optimizers.
 
 Independent tests use Pillow 12.3.0 and the installed native `jpegtran` to compare raw pixels and canonical coefficient-preserving JPEG output. Test tools are not shipped to browsers.
+
+Source archive SHA-256 values used for the checked-in JPEG build:
+
+```text
+560f6338b547544c4f9721b18d8b87685d433ec78b3c644c70d77adad22c55e6  libjpeg-turbo-3.1.2.tar.gz
+581a7ae0c0b4207fd26eb0b609d9df9fb5be1c2d451ed5cebb5479ebbcee6ae3  emsdk-4.0.18.tar.gz
+```
+
+Acquire the source archives from the official GitHub repositories' `refs/tags/3.1.2.tar.gz` and `refs/tags/4.0.18.tar.gz` URLs respectively, and verify these hashes before rebuilding. Emscripten resolves SDK 4.0.18 to upstream build `df7d4d811503e86e7728326e3eabbc383cb8042d`.
+
+The initial published offline asset set is approximately 831 KiB uncompressed, including licenses and icons. A content digest in the release identifier changes whenever runtime content changes. The service worker verifies SHA-256 of fetched assets and only accepts a matching complete release. Test dependencies additionally include pinned Playwright 1.62.1, Pillow 12.3.0 and python-docx 1.2.0. The independent native JPEG oracle used libjpeg-turbo 3.2.0.

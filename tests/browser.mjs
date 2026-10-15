@@ -51,12 +51,13 @@ try{
  let releaseWorker;const gate=new Promise(r=>{releaseWorker=r;});
  await page.route('**/worker.js',async route=>{const response=await route.fetch();await gate;await route.fulfill({response});},{times:1});
  await page.getByLabel('Choose a DOCX file').setInputFiles('tests/fixtures/mixed.docx');
- await page.getByRole('button',{name:'Cancel processing'}).click();releaseWorker();
+ await page.getByRole('button',{name:'Cancel processing'}).click();releaseWorker();assert.equal(await page.locator('#file').inputValue(),'','cancel permits choosing the same file again');
  await page.getByLabel('Choose a DOCX file').setInputFiles('tests/fixtures/empty.docx');await page.waitForFunction(()=>!document.querySelector('#optimize').disabled);
  assert.equal(await page.locator('#filename').textContent(),'empty.docx');
  await page.setViewportSize({width:320,height:740});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await page.screenshot({path:'tests/output/browser/mobile.png',fullPage:true});
- await page.getByRole('button',{name:'Clear document'}).click();await page.keyboard.press('Tab');
+ await page.getByRole('button',{name:'Clear document'}).click();await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.tagName),'SUMMARY');await page.keyboard.press('Shift+Tab');assert.equal(await page.evaluate(()=>document.activeElement.id),'file');
+ await page.evaluate(()=>document.documentElement.style.fontSize='200%');assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'200% text does not overflow the page');await page.screenshot({path:'tests/output/browser/text-200.png',fullPage:true});
  assert.equal(errors.length,0,errors.join('\n'));assert.ok(requests.every(r=>r.method==='GET'&&r.url.startsWith(baseURL)),JSON.stringify(requests));
  console.log('Browser: optimize/download, integrity, signatures, uppercase extension, escaped filenames, no-op, cancellation/reselection, 320px layout, no uploads passed');
  await context.close();
