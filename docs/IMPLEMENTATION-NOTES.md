@@ -1,0 +1,25 @@
+# Implementation decisions and final review
+
+The approved PWA was implemented natively in this chat on `codex/local-docx-pwa`. The original shell tools remain available. No production deployment or remote push was performed.
+
+## Decisions made during execution
+
+- Used the existing clean checkout on a dedicated feature branch to keep the user's working location stable. Cost: implementation files are visible in that checkout, without a separate worktree.
+- Built a small coefficient-preserving libjpeg-turbo wrapper with Emscripten 4.0.18 because a verifiable prebuilt browser wrapper was unavailable. Cost: maintaining the native wrapper and reproducible compiler instructions.
+- Retain original PNGs when optimization changes the sample or palette representation, even where an equivalent representation might compress better. Cost: missed savings; image and metadata preservation takes precedence.
+- Include a digest of every runtime asset, including the service worker, in the release identity. Cost: longer identifiers and a new cache identity for each runtime change; this protects the active cache during failed updates.
+
+## Independent review and fixes
+
+The independent reviewer found no critical issues and two important lifecycle issues. Both received regression coverage and were fixed in the final pass:
+
+1. A first visit spanning deployment could leave page and controller releases inconsistent. A mismatch now blocks new work and reloads into the controlling release when the current operation becomes idle. A focused protocol test failed before the fix and passed afterward. The reviewer's real-browser reproduction then reported matching page/controller releases and Ready offline. Its scenario is retained as `tests/release-transition.mjs`.
+2. Restoring a page from browser history could leave an enabled Optimize button after its worker was terminated. Leaving or restoring the page now clears document/result references, object URLs, worker, busy state and controls together. Browser regressions for ready, processing and result states failed before the fix and passed afterward. They simulate persisted lifecycle events; actual physical BFCache behavior remains unverified.
+
+The reviewer reported no minor findings to defer. Full unit and browser suites were rerun after the fixes; see `VERIFICATION.md`.
+
+## Review scope decisions
+
+- Alternate main-document locations remain outside this release's approved `word/document.xml` contract. Cost: uncommon otherwise valid OOXML packages may be rejected rather than optimized.
+- Word, older-browser, installed-app, physical-device and maximum-size memory checks remain accurately documented gaps. Cost: those environments and extreme inputs are not established by the Chromium and small-fixture results.
+- The reviewer examined wrappers, dependency configuration and provenance but did not independently reproduce the vendor compiler build. Cost: binary provenance relies on the recorded pinned build and behavioral/oracle checks, rather than a second byte-for-byte build.

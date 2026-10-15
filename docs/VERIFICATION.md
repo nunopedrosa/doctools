@@ -4,8 +4,8 @@ Verification date: 2026-10-15. This is a local development result; no live site 
 
 ## Automated checks
 
-- `npm test`: 44 passing tests covering codec preservation, DOCX round trips, unsafe/corrupt/unsupported archives, encrypted and signed input, entity declarations, UTF16 XML, Strict OOXML namespaces, relationship resolution, limits, no-op results, and release inventory/hash consistency.
-- `npm run test:browser`: headless Chromium 153.0.8010.12 using Playwright 1.62.1. File selection, worker processing, download, output integrity, escaped filenames, uppercase extension, no-op, signature rejection, cancellation/reselection, 320px layout, no document uploads, offline installation/reload/new-file optimization, cache repair, failed installation, and two-window update protection passed.
+- `npm test`: 45 passing tests covering codec preservation, DOCX round trips, unsafe/corrupt/unsupported archives, encrypted and signed input, entity declarations, UTF16 XML, Strict OOXML namespaces, relationship resolution, limits, no-op results, and release inventory/hash consistency.
+- `npm run test:browser`: headless Chromium 153.0.8010.12 using Playwright 1.62.1. File selection, worker processing, download, output integrity, escaped filenames, uppercase extension, no-op, signature rejection, cancellation/reselection, 320px layout, no document uploads, offline installation/reload/new-file optimization, cache repair, failed installation, and two-window update protection passed. A persistent first-install deployment-transition regression also verifies that page and controller converge on the same complete release.
 - Independent image oracle: Pillow raw pixels, dimensions and metadata comparisons; native jpegtran canonical output comparison to establish JPEG coefficient and metadata preservation. Includes transparent, palette, grayscale, interlaced PNG and baseline/progressive JPEG. Truncated JPEGs are preserved instead of silently repaired. Unsupported CMYK and animated PNG are retained.
 - A realistic python-docx fixture includes visible PNG/JPEG images, a shared header image, footer, comment and tracked insertion. All unchanged package-part bytes compare exactly after optimization.
 - LibreOffice rendered the original and optimized realistic fixtures to one-page PDFs. Poppler renderings at 1400px were pixel-identical. This verifies that renderer's result; it is separate from a Word UI check.
@@ -22,7 +22,11 @@ Generated fixtures are synthetic and contain no personal records. Screenshots an
 
 These small fixtures are correctness checks, not typical-document benchmarks. ZIP already compresses parts of the original PNG data. Savings depend on the source images and the surrounding archive.
 
-The measured Node process peak RSS reached approximately 114 MiB across those two operations. This is a whole-process high-water mark for small inputs, not a browser/mobile memory measurement or a maximum-size document guarantee. The complete cached app is approximately 831 KiB before transport compression. PNG optimization is single-threaded; JPEG WebAssembly memory growth is capped at 512 MiB.
+The measured Node process peak RSS reached approximately 114 MiB across those two operations. This is a whole-process high-water mark for small inputs, not a browser/mobile memory measurement or a maximum-size document guarantee. The complete cached app is approximately 833 KiB before transport compression. PNG optimization is single-threaded; JPEG WebAssembly memory growth is capped at 512 MiB.
+
+History restoration checks dispatch persisted `pagehide`/`pageshow` events in ready, processing and result states. An actual BFCache restore was unavailable in headless Chromium, so physical browser-history verification remains outstanding. The release mismatch protocol also has a focused unit regression proving that new work is blocked while reload waits for an active operation to become idle.
+
+The independent final review found two important lifecycle issues. Both were fixed with failing regressions followed by passing full suites; no minor findings were deferred.
 
 ## Remaining verification
 

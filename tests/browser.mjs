@@ -61,6 +61,17 @@ try{
  assert.equal(errors.length,0,errors.join('\n'));assert.ok(requests.every(r=>r.method==='GET'&&r.url.startsWith(baseURL)),JSON.stringify(requests));
  console.log('Browser: optimize/download, integrity, signatures, uppercase extension, escaped filenames, no-op, cancellation/reselection, 320px layout, no uploads passed');
  await context.close();
+ const lifecycleFailures=[];
+ const life=await browser.newContext({serviceWorkers:'block'});
+ for(const phase of ['ready','busy','result']){
+  const tab=await life.newPage();await tab.goto(baseURL);await tab.getByLabel('Choose a DOCX file').setInputFiles('tests/fixtures/mixed.docx');await tab.waitForFunction(()=>!document.querySelector('#optimize').disabled);
+  if(phase==='busy')await tab.evaluate(()=>{const original=Worker.prototype.postMessage;Worker.prototype.postMessage=function(data,...args){if(data.type==='optimize')return;return original.call(this,data,...args);};});
+  if(phase!=='ready'){await tab.getByRole('button',{name:'Optimize without quality loss'}).click();if(phase==='result')await tab.getByRole('link',{name:'Download DOCX'}).waitFor();}
+  await tab.evaluate(()=>{dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));});
+  const reset=await tab.evaluate(()=>document.querySelector('#document').hidden&&!document.querySelector('#dropzone').hidden&&document.querySelector('#optimize').disabled&&document.querySelector('#file').value==='');
+  if(!reset)lifecycleFailures.push('Restoration did not reset '+phase+' state');await tab.close();
+ }
+ await life.close();
  // Fresh context proves first installation and complete cache independently of workflow tests.
  const offlineContext=await browser.newContext({acceptDownloads:true});let offlinePage=await offlineContext.newPage();
  await offlinePage.goto(baseURL);await offlinePage.getByText('Ready offline',{exact:true}).waitFor({timeout:30000});
@@ -88,5 +99,5 @@ try{
  await second.getByRole('button',{name:'Cancel processing'}).click();
  const newPage=first.waitForEvent('load');await first.getByRole('button',{name:'Update app'}).click();await newPage;await first.getByText('Ready offline',{exact:true}).waitFor({timeout:20000});
  assert.equal(await first.evaluate(async()=>{const c=await caches.keys();return c.some(n=>n.startsWith('doctools-assets-2026.10.15.2-'));}),true);
- await updateContext.close();releaseOverride=null;console.log('Offline: busy second window blocks update; idle windows update and reload');
+ await updateContext.close();releaseOverride=null;console.log('Offline: busy second window blocks update; idle windows update and reload');assert.deepEqual(lifecycleFailures,[]);console.log('Lifecycle: restored ready/busy/result states reset');
 }finally{await browser?.close();await new Promise(r=>server.close(r));}

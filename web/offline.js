@@ -1,14 +1,16 @@
 import {VERSION} from './release.js';
 export function setupOffline({isBusy,setLocked,status,updateButton}){
- let registration,locked=false,reloading=false,updateNotice=false;
+ let registration,locked=false,reloading=false,updateNotice=false,mismatched=false;
  const message=(target,type)=>new Promise((resolve,reject)=>{
   const channel=new MessageChannel(),timer=setTimeout(()=>{channel.port1.close();reject(Error('Offline check timed out'));},8000);
   channel.port1.onmessage=e=>{clearTimeout(timer);channel.port1.close();resolve(e.data);};target.postMessage({type},[channel.port2]);
  });
+ function reloadWhenIdle(){if(mismatched&&!isBusy()&&!reloading){reloading=true;location.reload();}}
+ document.addEventListener('doctools-busy',reloadWhenIdle);
  async function check(){
   if(updateNotice)return;
   const controller=navigator.serviceWorker.controller;if(!controller)return;
-  try{let r=await message(controller,'CHECK');if(!r.ready&&navigator.onLine)r=await message(controller,'REPAIR');if(updateNotice)return;status.textContent=r.ready&&r.version===VERSION?'Ready offline':'Offline files incomplete. Reconnect and reload to prepare again.';}catch{if(updateNotice)return;status.textContent='Could not verify offline files. Reconnect and reload.';}
+  try{let r=await message(controller,'CHECK');if(!r.ready&&navigator.onLine)r=await message(controller,'REPAIR');if(updateNotice)return;if(r.version!==VERSION){mismatched=true;locked=true;setLocked(true);status.textContent='App updated. Finishing the current operation before reloading…';reloadWhenIdle();return;}status.textContent=r.ready&&r.version===VERSION?'Ready offline':'Offline files incomplete. Reconnect and reload to prepare again.';}catch{if(updateNotice)return;status.textContent='Could not verify offline files. Reconnect and reload.';}
  }
  if(!('serviceWorker'in navigator)||!window.isSecureContext){status.textContent='Offline installation needs HTTPS or localhost.';return;}
  navigator.serviceWorker.addEventListener('message',e=>{
@@ -18,7 +20,7 @@ export function setupOffline({isBusy,setLocked,status,updateButton}){
   }else if(e.data?.type==='UNLOCK'){locked=false;setLocked(false);}
  });
  navigator.serviceWorker.addEventListener('controllerchange',()=>{
-  if(locked&&!reloading){reloading=true;location.reload();}else check();
+  if(locked&&!isBusy()&&!reloading){reloading=true;location.reload();}else check();
  });
  window.addEventListener('focus',check);window.addEventListener('online',check);window.addEventListener('pageshow',check);
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check();});
