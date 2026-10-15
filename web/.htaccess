@@ -1,0 +1,17 @@
+DirectoryIndex index.html
+Options -Indexes
+AddType application/wasm .wasm
+AddType text/javascript .js
+AddType application/manifest+json .webmanifest
+
+<IfModule mod_headers.c>
+  Header always set Cache-Control "no-cache"
+  Header always set X-Content-Type-Options "nosniff"
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^ https://smaller.basecentral.link%{REQUEST_URI} [R=301,L,NE]
+</IfModule>
