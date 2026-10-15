@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#163653"><meta name="description" content="Reduce DOCX image size locally, without losing image quality or resolution.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Doctools — Local DOCX optimizer</title>
+<link rel="icon" href="icons/icon.svg"><link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header><a class="brand" href="./"><img src="icons/icon.svg" width="36" height="36" alt="">Doctools</a><span class="local-mark">Files stay on your device</span></header>
+<main>
+<section class="intro"><h1>Smaller documents.<br>Every detail kept.</h1><p>Reduce the size of images inside your Word document, without changing their resolution or quality.</p></section>
+<div class="workspace">
+<section class="sheet" aria-label="Document optimizer">
+<div id="dropzone" class="dropzone">
+<svg class="file-art" viewBox="0 0 72 88" aria-hidden="true"><path d="M10 3h34l18 18v62H10z"/><path d="M44 3v20h18M23 41h26M23 52h26M23 63h17"/></svg>
+<h2>Choose your document</h2><p>Drop a DOCX here, or select one from your device.</p>
+<label class="choose" for="file">Choose a DOCX file</label><input id="file" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" aria-describedby="limits">
+<p id="limits" class="small">One DOCX at a time. Up to 100 MiB.</p>
+</div>
+<div id="document" class="document" hidden><div class="file-heading"><div><h2 id="filename"></h2><p id="summary"></p></div><button id="clear" class="text-button" type="button" aria-label="Clear document">Clear</button></div>
+<p class="policy">Lossless optimization. Original dimensions, image quality and document contents are preserved.</p>
+<div class="actions"><button id="optimize" class="primary" type="button" disabled>Optimize without quality loss</button><button id="cancel" type="button" hidden aria-label="Cancel processing">Cancel</button></div>
+<progress id="progress" aria-label="Optimization progress" hidden></progress>
+</div>
+<p id="status" role="status" aria-live="polite" class="status">Ready when you are.</p><p id="error" role="alert" class="error" hidden></p>
+<section id="result" class="result" aria-label="Optimization result" hidden><h2 id="result-title"></h2><p id="savings"></p><p id="sizes" class="small"></p><div id="download-slot"></div></section>
+</section>
+<aside><h2>What stays the same</h2><ul class="preserved"><li>Image resolution and quality</li><li>Colors and transparency</li><li>Text, layout and formatting</li><li>Comments and tracked changes</li></ul><p>Your original file stays untouched. You download a separate copy.</p><p>Already optimized images may not get smaller. Unsupported formats are kept as they are.</p><details><summary>Limits and supported files</summary><p>DOCX only. Password-protected and digitally signed documents cannot be processed. Maximum expanded size: 250 MiB, with up to 5,000 entries and 50 MiB per entry. Images above 25 megapixels are kept unchanged.</p></details></aside>
+</div>
+<section id="report" class="report" hidden><h2>Image report</h2><p>Each image is kept in its original format. A replacement is used only when it is smaller.</p><div class="table-wrap"><table><thead><tr><th scope="col">Image</th><th scope="col">Result</th><th scope="col">Before</th><th scope="col">After</th></tr></thead><tbody id="images"></tbody></table></div></section>
+<footer><div><span id="offline-status" role="status">Local processing</span><button id="update" class="text-button" type="button" hidden>Update app</button></div><details><summary>Use offline or install</summary><p>Keep this page open while offline assets are prepared. Once Ready offline appears, you can reopen and use the app without a connection. Install through your browser's app menu, or use Safari's File → Add to Dock on Mac. Clearing site data removes offline availability.</p></details><p>No uploads. No accounts. No saved document history.</p></footer>
+</main><noscript>This app needs JavaScript to process documents locally in your browser.</noscript><script type="module" src="app.js"></script>
+</body></html>
