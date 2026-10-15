@@ -102,3 +102,10 @@ p=package(False);p['word/media/diagram.png']=(root/'opaque-diagram.png').read_by
 for name,reducible in [('gray16',False),('gray16-reducible',True)]:
  im=Image.new('I;16',(128,128));im.putdata([((x*257)%65536 if reducible else (x*521+13)%65536) for x in range(128*128)])
  im.save(root/(name+'.png'),compress_level=0)
+# A deterministic textured gradient needs color reduction for substantial savings.
+import random
+rng=random.Random(42);im=Image.new('RGBA',(320,240))
+im.putdata([(max(0,min(255,x*255//319+rng.randrange(-8,9))),max(0,min(255,y*255//239+rng.randrange(-8,9))),max(0,min(255,140+rng.randrange(-8,9))),255) for y in range(240) for x in range(320)])
+meta=PngImagePlugin.PngInfo();meta.add_text('Author','Color reduction fixture');im.save(root/'textured.png',pnginfo=meta,dpi=(144,144))
+im.putpixel((0,0),(0,0,140,0));im.save(root/'textured-alpha.png',pnginfo=meta,dpi=(144,144))
+p=package(False);p['word/media/texture.png']=(root/'textured.png').read_bytes();doc('colors.docx',p,zipfile.ZIP_STORED)

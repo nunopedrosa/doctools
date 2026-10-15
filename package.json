@@ -15,6 +15,7 @@
     "@xmldom/xmldom": "0.9.12",
     "@zip.js/zip.js": "2.23.0",
     "esbuild": "0.28.2",
-    "playwright": "1.62.1"
+    "playwright": "1.62.1",
+    "upng-js": "2.1.0"
   }
 }

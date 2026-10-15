@@ -22,7 +22,11 @@ export async function optimizePng(bytes){
   const binary=url.protocol==='file:'?new Uint8Array(await (await import('node:fs/promises')).readFile(url)):await (await fetch(url)).arrayBuffer();
   await init(binary);
  })();await ready;
- const original=pngInfo(bytes),out=optimise(bytes,2,original.chunks[0].data[12]===1,false),candidate=pngInfo(out);
+ const original=pngInfo(bytes),out=optimise(bytes,2,original.chunks[0].data[12]===1,false);
+ return restorePngMetadata(bytes,out);
+}
+export function restorePngMetadata(bytes,out){
+ const original=pngInfo(bytes),candidate=pngInfo(out);
  const layoutChanged=['IHDR','PLTE','tRNS'].some(type=>{
   const a=original.chunks.find(c=>c.type===type)?.data||new Uint8Array(),b=candidate.chunks.find(c=>c.type===type)?.data||new Uint8Array();return !equal(a,b);
  });

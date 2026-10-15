@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#163653"><meta name="description" content="Reduce DOCX image size locally, without losing image quality or resolution.">
+<meta name="theme-color" content="#163653"><meta name="description" content="Reduce DOCX image size locally. Choose exact lossless optimization or optional PNG color reduction, without resizing.">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Doctools — Local DOCX optimizer</title>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-192.png"><link rel="icon" href="icons/icon.svg"><link rel="stylesheet" href="styles.css">
@@ -10,7 +10,7 @@
 <body>
 <header><a class="brand" href="./"><img src="icons/icon.svg" width="36" height="36" alt="">Doctools</a><span class="local-mark">Files stay on your device</span></header>
 <main>
-<section class="intro"><h1>Smaller documents.<br>Every detail kept.</h1><p>Reduce the size of images inside your Word document, without changing their resolution or quality.</p></section>
+<section class="intro"><h1>Smaller documents.<br>The choice is yours.</h1><p>Keep every pixel, or reduce PNG colors for a smaller file. Image dimensions stay the same. Everything runs on your device.</p></section>
 <div class="workspace">
 <section class="sheet" aria-label="Document optimizer">
 <div id="dropzone" class="dropzone">
@@ -20,16 +20,23 @@
 <p id="limits" class="small">One DOCX at a time. Up to 100 MiB.</p>
 </div>
 <div id="document" class="document" hidden><div class="file-heading"><div><h2 id="filename"></h2><p id="summary"></p></div><button id="clear" class="text-button" type="button" aria-label="Clear document">Clear</button></div>
-<p class="policy">Lossless optimization. Original dimensions, image quality and document contents are preserved.</p>
+<div class="compression-controls"><label for="mode">Compression mode</label><select id="mode" aria-describedby="mode-policy"><option value="lossless">Exact lossless</option><option value="colors">Reduce PNG colors</option></select>
+<div id="color-controls" hidden><label for="colors">Maximum PNG colors</label><select id="colors"><option value="256">256 — more detail</option><option value="128" selected>128 — balanced</option><option value="64">64 — smaller file</option><option value="32">32 — strongest reduction</option></select></div></div>
+<p id="mode-policy" class="policy">Preserves every pixel and original image metadata.</p>
 <div class="actions"><button id="optimize" class="primary" type="button" disabled>Optimize without quality loss</button><button id="cancel" type="button" hidden aria-label="Cancel processing">Cancel</button></div>
 <progress id="progress" aria-label="Optimization progress" hidden></progress>
 </div>
 <p id="status" role="status" aria-live="polite" class="status">Ready when you are.</p><p id="error" role="alert" class="error" hidden></p>
 <section id="result" class="result" aria-label="Optimization result" hidden><h2 id="result-title"></h2><p id="savings"></p><p id="sizes" class="small"></p><div id="download-slot"></div></section>
 </section>
-<aside><h2>What stays the same</h2><ul class="preserved"><li>Image resolution and quality</li><li>Colors and transparency</li><li>Text, layout and formatting</li><li>Comments and tracked changes</li></ul><p>Your original file stays untouched. You download a separate copy.</p><p>Already optimized images may not get smaller. Unsupported formats are kept as they are.</p><details><summary>Limits and supported files</summary><p>DOCX only. Password-protected and digitally signed documents cannot be processed. Maximum expanded size: 250 MiB, with up to 5,000 entries and 50 MiB per entry. Images above 25 megapixels are kept unchanged.</p></details></aside>
+<aside><h2>What stays the same</h2><ul class="preserved"><li>Image dimensions and transparency</li><li>Text, layout and formatting</li><li>Comments and tracked changes</li></ul><p>Your original file stays untouched. You download a separate copy.</p><p>Exact lossless preserves every pixel. Optional color reduction changes PNG colors; use the preview to judge the result. JPEGs stay lossless in both modes.</p><details><summary>Limits and supported files</summary><p>DOCX only. Password-protected and digitally signed documents cannot be processed. Maximum expanded size: 250 MiB, with up to 5,000 entries and 50 MiB per entry. Images above 25 megapixels are kept unchanged. Color reduction supports static PNGs up to 4 megapixels and 8-bit samples; other variants use lossless processing.</p></details></aside>
 </div>
 <section id="report" class="report" hidden><h2>Image report</h2><p>Each image is kept in its original format. A replacement is used only when it is smaller.</p><div class="table-wrap"><table><thead><tr><th scope="col">Image</th><th scope="col">Result</th><th scope="col">Before</th><th scope="col">After</th></tr></thead><tbody id="images"></tbody></table></div></section>
+<section id="preview" class="preview" aria-label="Before and after preview" hidden>
+<div class="file-heading"><div><h2 id="preview-title"></h2><p id="preview-message" role="status"></p></div><button id="close-preview" type="button">Close preview</button></div>
+<label for="preview-zoom">Preview zoom</label> <select id="preview-zoom"><option value="fit">Fit to panel</option><option value="actual">100% — actual pixels</option></select>
+<div id="preview-pair" class="preview-pair" hidden><figure><figcaption>Original</figcaption><div id="before-scroll" class="image-scroll" tabindex="0" role="region" aria-label="Original image preview"><img id="preview-before" alt="Original embedded image"></div></figure><figure><figcaption>Color-reduced result</figcaption><div id="after-scroll" class="image-scroll" tabindex="0" role="region" aria-label="Color-reduced image preview"><img id="preview-after" alt="Color-reduced embedded image"></div></figure></div>
+</section>
 <footer><div><span id="offline-status" role="status">Local processing</span><button id="update" class="text-button" type="button" hidden>Update app</button></div><details><summary>Use offline or install</summary><p>Keep this page open while offline assets are prepared. Once Ready offline appears, you can reopen and use the app without a connection. Install through your browser's app menu, or use Safari's File → Add to Dock on Mac. Clearing site data removes offline availability.</p></details><p>No uploads. No accounts. No saved document history.</p></footer>
 </main><noscript>This app needs JavaScript to process documents locally in your browser.</noscript><script type="module" src="app.js"></script>
 </body></html>

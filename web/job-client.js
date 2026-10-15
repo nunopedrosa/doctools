@@ -14,7 +14,8 @@ export function createJobClient(onMessage){
     worker.postMessage({id,type:'inspect',bytes},[bytes]);
    }catch(e){if(jobId===id)onMessage({id,type:'error',message:e.message});}
   },
-  optimize(){worker?.postMessage({id,type:'optimize'});},
+  optimize(options={}){worker?.postMessage({id,type:'optimize',options});},
+  preview(path){worker?.postMessage({id,type:'preview',path});},
   cancel:clear,clear,
  };
 }

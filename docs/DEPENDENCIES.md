@@ -7,6 +7,7 @@ All runtime dependencies are vendored under `web/vendor/`; there are no CDN impo
 | zip.js | 2.23.0 | BSD-3-Clause | Strict streamed ZIP reading and pass-through writing |
 | jSquash OxiPNG | 2.3.0 | Apache-2.0 / MIT | Binary PNG optimization; single-thread wrapper only |
 | jSquash PNG | 3.1.1 | Apache-2.0 / bundled codec license | Exact decoded PNG pixel comparison, including 16-bit samples |
+| UPNG.js / pako | 2.1.0 / 1.0.11 | MIT / MIT and Zlib | Optional PNG palette reduction and deflate encoding |
 | xmldom | 0.9.12 | MIT | Worker-compatible XML validation |
 | libjpeg-turbo | 3.1.2 | BSD/IJG/zlib, see bundled license | Coefficient-preserving JPEG transcoding |
 | Emscripten (maintainer only) | 4.0.18 | MIT and toolchain licenses | JPEG WebAssembly build |
@@ -22,6 +23,8 @@ The PNG adapter uses single-threaded OxiPNG with alpha optimization disabled. It
 
 Independent tests use Pillow 12.3.0 and the installed native `jpegtran` to compare raw pixels and canonical coefficient-preserving JPEG output. Test tools are not shipped to browsers.
 
+The optional color mode uses [UPNG.js](https://github.com/photopea/UPNG.js) with its pako dependency, bundled into one local module. The module and licenses add approximately 65 KiB. The module loads for execution only when color mode is selected and is included in the offline cache. Quantization runs in the existing worker without browser canvas color conversion, threads or network services. A separate 4-megapixel ceiling bounds its extra pixel arrays and quantization work; JPEGs keep the same lossless path. Previews retain the current result in worker memory and read only one original/result image pair at a time. Maximum-size memory behavior still needs device-specific verification.
+
 Source archive SHA-256 values used for the checked-in JPEG build:
 
 ```text
@@ -31,6 +34,6 @@ Source archive SHA-256 values used for the checked-in JPEG build:
 
 Acquire the source archives from the official GitHub repositories' `refs/tags/3.1.2.tar.gz` and `refs/tags/4.0.18.tar.gz` URLs respectively, and verify these hashes before rebuilding. Emscripten resolves SDK 4.0.18 to upstream build `df7d4d811503e86e7728326e3eabbc383cb8042d`.
 
-The offline asset set with exact PNG verification is approximately 1.0 MiB uncompressed, including licenses and icons. A content digest in the release identifier changes whenever runtime content changes. The service worker verifies SHA-256 of fetched assets and only accepts a matching complete release. Test dependencies additionally include pinned Playwright 1.62.1, Pillow 12.3.0 and python-docx 1.2.0. The independent native JPEG oracle used libjpeg-turbo 3.2.0.
+The offline asset set with exact PNG verification and optional color reduction is approximately 1.08 MiB uncompressed, including licenses and icons. A content digest in the release identifier changes whenever runtime content changes. The service worker verifies SHA-256 of fetched assets and only accepts a matching complete release. Test dependencies additionally include pinned Playwright 1.62.1, Pillow 12.3.0 and python-docx 1.2.0. The independent native JPEG oracle used libjpeg-turbo 3.2.0.
 
 The bundled jSquash codec identifies upstream OxiPNG v3.0.0 in its codec README. Its MIT attribution is preserved in `web/vendor/licenses/oxipng-upstream.txt`, acquired from the official tagged source.

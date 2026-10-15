@@ -8,6 +8,7 @@ The approved PWA was implemented natively in this chat on `codex/local-docx-pwa`
 - Built a small coefficient-preserving libjpeg-turbo wrapper with Emscripten 4.0.18 because a verifiable prebuilt browser wrapper was unavailable. Cost: maintaining the native wrapper and reproducible compiler instructions.
 - The initial implementation retained all PNG representation changes. User feedback exposed that this rejected useful lossless savings. The corrected implementation compares exact decoded pixels and allows equivalent representations while preserving metadata. Cost: an additional decoder, CPU and memory; no pixel-quality concession. Representation-dependent metadata still receives conservative fallback.
 - Include a digest of every runtime asset, including the service worker, in the release identity. Cost: longer identifiers and a new cache identity for each runtime change; this protects the active cache during failed updates.
+- On 2026-10-15 the user approved an optional PNG color-reduction mode with previews after direct comparison established that LightImage changes colors while retaining dimensions. Exact lossless remains the default. The new mode uses UPNG.js with 32/64/128/256-color settings, keeps alpha samples and original metadata, and uses the existing lossless path for unsupported variants. Previews load one original/result pair, support fit and actual-pixel views, synchronize scrolling, and release object URLs when dismissed or invalidated. Cost: colors may change visibly; additional worker result retention and quantization memory. This supersedes the original specification's lossless-only scope without weakening that mode.
 
 ## Independent review and fixes
 
@@ -17,6 +18,8 @@ The independent reviewer found no critical issues and two important lifecycle is
 2. Restoring a page from browser history could leave an enabled Optimize button after its worker was terminated. Leaving or restoring the page now clears document/result references, object URLs, worker, busy state and controls together. Browser regressions for ready, processing and result states failed before the fix and passed afterward. They simulate persisted lifecycle events; actual physical BFCache behavior remains unverified.
 
 The reviewer reported no minor findings to defer. Full unit and browser suites were rerun after the fixes; see `VERIFICATION.md`.
+
+The focused review of the optional color mode found no important or critical issues. It checked mode isolation, awaited verification, metadata fallback, alpha preservation, preview cleanup and stale-job filtering. It independently checked all four palette limits and identical JPEG output across modes.
 
 ## Review scope decisions
 

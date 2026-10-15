@@ -1,5 +1,10 @@
 [
   {
+    "name": "upng.js",
+    "bytes": 64489,
+    "sha256": "82ed60b510b2c74faca97c84937fb6ea732955d19d7e96af364068d54abe0db4"
+  },
+  {
     "name": "png-decode.js",
     "bytes": 8818,
     "sha256": "65ebe1192f970c46263d52a122edf6bd01be81174c6bf1736a16f1e6f0e9b411"
