@@ -6,7 +6,7 @@ Doctools is a static application. Only `web/` is published. Files selected by vi
 
 - Public URL: `https://smaller.basecentral.link/`.
 - DreamHost SSH account: `basecentral@gcx.me`, the same account as Agenda.
-- Verified origin IPv4: `75.119.200.187`.
+- Verified origin IPv4: `75.119.207.108` (DreamHost's authoritative Smaller A record; Agenda uses a different address).
 - Domain document root: `/home/basecentral/smaller.basecentral.link`.
 - Release store: `/home/basecentral/smaller-app/releases/`.
 - Active link: `/home/basecentral/smaller-app/current`.
@@ -57,7 +57,7 @@ Use a fresh temporary link name if `current.next` already exists. Confirm the cu
 
 ## HTTPS, DNS and caching
 
-The DNS-only `smaller` A record currently points to the verified DreamHost origin. DreamHost must have the domain configured under `basecentral` with a trusted certificate for `smaller.basecentral.link`. Use its free Let's Encrypt certificate with automatic renewal. Check that the order is Active before calling HTTPS/PWA installation ready. The `.well-known/acme-challenge/` path remains exempt from the app's HTTP redirect for certificate issuance/renewal.
+The `smaller` A record must point to `75.119.207.108`; do not copy Agenda's `75.119.200.187` address. Keep it DNS-only while the certificate is being issued. DreamHost must have the domain configured under `basecentral` with a trusted certificate for `smaller.basecentral.link`. Use its free Let's Encrypt certificate with automatic renewal. Check that the order is Active before calling HTTPS/PWA installation ready. The `.well-known/acme-challenge/` path remains exempt from the app's HTTP redirect for certificate issuance/renewal.
 
 `web/.htaccess` supplies the index, disables directory listings, declares WASM/JavaScript/manifest MIME types, requests `Cache-Control: no-cache` and redirects HTTP to the fixed HTTPS hostname. The app's service worker supplies the verified offline cache. Do not use long browser cache TTLs for mutable module URLs or `release.js`/`sw.js`.
 
@@ -78,8 +78,42 @@ Require HTTP → HTTPS, valid TLS without bypasses, status 200 for app assets, `
 
 In a fresh browser context, wait for **Ready offline**, then verify DOCX and standalone PNG/JPEG processing and previews. Disconnect, reload, and repeat with synthetic fixtures. Assert only same-origin GET requests and local Blob URLs; selected files must not be uploaded or appear in Cache Storage. Check private repository paths such as `/.git/config`, `/README.md`, `/tests/` and `/scripts/` are unavailable. Do not upload a personal document as a hosting probe.
 
+The explicit hosted smoke test performs these checks against the checked-out release, validates all asset hashes and headers, and writes screenshots/downloads under ignored `tests/output/live/`:
+
+```sh
+node tests/live.mjs https://smaller.basecentral.link/
+```
+
+It requires trusted TLS and the existing Playwright/Chromium development dependencies. It never disables certificate validation. The browser selects only synthetic local fixtures; file processing remains in its worker with no uploads.
+
 ## Roll back
 
 Switch `current` to the intact previous release using the same temporary-link/rename procedure. Verify its assets and HTTPS again. The service worker treats the prior code as another content-identified release; existing tabs may need **Update app** or a reload once idle. Do not delete browser caches or visitors' local data as a rollback step.
 
 To undo first publication completely, retain the deployed release, remove only the known public symlink, and restore the recorded original-defaults directory to its original name. Never remove a directory recursively as part of this operation. Doctools stores no server-side user documents, database or app secrets to migrate.
+
+## First deployment record — 2026-10-16
+
+- Runtime release: `2026.10.16.1-021043170764`.
+- Source commit: `d9943ba` (application implementation `9485f27`, plus hosting configuration).
+- Uploaded archive SHA-256: `bfde0afd62347c0daa77f163e04e9313d9afe11f4207c5d1999a72c27c8cacdb`.
+- Verified all 43 published files remotely: 42 runtime assets plus `.htaccess`.
+- Active target: `/home/basecentral/smaller-app/releases/2026.10.16.1-021043170764/web`.
+- Original defaults retained at `/home/basecentral/smaller.basecentral.link.before-smaller-20261015-233223` (backup filename uses UTC; activation was 00:32 on 2026-10-16 in Lisbon).
+- Private checksum/archive records: `/home/basecentral/smaller-app/incoming/2026.10.16.1-021043170764/`.
+- Local pre-publication checks: 68 unit tests, full Chromium browser/offline/update suite, and 12-image independent lossless oracle passed.
+
+Routing initially used Agenda's address, which returned DreamHost's default site. Querying DreamHost's own authoritative DNS established Smaller's distinct origin, `75.119.207.108`. Direct HTTP to that address with the Smaller hostname now returns the deployed `.htaccess` redirect and headers. The user corrected Cloudflare's Smaller A record; public DNS confirms the correct address, currently DNS-only. Cached answers may temporarily retain the old proxy addresses.
+
+The user reports the Let's Encrypt order is still processing, also observed in the DreamHost panel. The origin still presents a self-signed certificate. Runtime file publication is complete, but the app is **not yet verified ready for public HTTPS/offline use**. No certificate bypass or weakened SSL mode was used. No changes were made to Agenda's deployment, database, configuration, DNS or cache rule.
+
+The first explicit hosted smoke-test attempt stops at normal TLS validation with `DEPTH_ZERO_SELF_SIGNED_CERT`, before any browser/fixture work. This is an outstanding hosting prerequisite, not a passing live verification result.
+
+Once DreamHost marks the certificate Active, verify the actual origin and run the complete public smoke test:
+
+```sh
+curl --resolve smaller.basecentral.link:443:75.119.207.108 -I https://smaller.basecentral.link/
+node tests/live.mjs https://smaller.basecentral.link/
+```
+
+Both must succeed with normal TLS validation before marking publication verified. If proxying is re-enabled, additionally verify Full (strict) and the Smaller-only cache policy above. A valid Cloudflare edge certificate alone does not establish a trusted or correctly routed origin.

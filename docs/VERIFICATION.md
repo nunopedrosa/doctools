@@ -1,6 +1,6 @@
 # Doctools verification
 
-Verification date: 2026-10-16. This is a local development result; no live site has been deployed.
+Verification date: 2026-10-16. Application tests below are local development checks. Runtime files have subsequently been deployed to smaller.basecentral.link; trusted HTTPS and live offline verification are pending DreamHost's certificate order. See [the deployment record](DEPLOYMENT.md).
 
 ## Automated checks
 

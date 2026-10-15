@@ -1,6 +1,6 @@
 # Implementation decisions and final review
 
-The approved PWA was implemented natively in this chat on `codex/local-docx-pwa`. The original shell tools remain available. No production deployment or remote push was performed.
+The approved PWA was implemented natively in this chat on `codex/local-docx-pwa`. The original shell tools remain available. Initial implementation did not deploy or push remotely. The user subsequently authorized publication to `smaller.basecentral.link`; see [the deployment record](DEPLOYMENT.md). No Git remote push was performed.
 
 ## Decisions made during execution
 

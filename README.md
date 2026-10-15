@@ -27,7 +27,7 @@ Install from Chrome/Edge's app installation menu, or Safari's **File → Add to 
 
 Updates wait until you choose **Update app**. Finish or cancel processing in all open Doctools windows first. The app checks and locks idle windows, then reloads them together. A failed download of an update leaves the active release available. Offline readiness is checked separately from connection status.
 
-You can also host the contents of `web/` on an HTTPS static site. Serve `.wasm` as `application/wasm` and `.js` as JavaScript. Keep the whole release together, including vendor binaries and licenses; keep repository documentation, tests and `.git` outside the web root. No hosting destination has been configured or deployed.
+The production target is [smaller.basecentral.link](https://smaller.basecentral.link/), using the same DreamHost account as Agenda. Runtime files are deployed; trusted HTTPS and live offline verification are pending DreamHost's certificate order. See [deployment and rollback instructions](docs/DEPLOYMENT.md) for the exact paths, DNS, cache headers and verification command. Keep the whole release together, including vendor binaries and licenses; keep repository documentation, tests and `.git` outside the web root.
 
 ## Preservation and limits
 
