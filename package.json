@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "vendor": "node scripts/vendor.mjs",
+    "vendor": "node scripts/vendor.mjs && node scripts/release.mjs",
+    "release": "node scripts/release.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:browser": "node tests/browser.mjs"
   },
@@ -12,6 +13,7 @@
     "@jsquash/oxipng": "2.3.0",
     "@xmldom/xmldom": "0.9.12",
     "@zip.js/zip.js": "2.23.0",
-    "esbuild": "0.28.2"
+    "esbuild": "0.28.2",
+    "playwright": "1.62.1"
   }
 }

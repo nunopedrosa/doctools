@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {existsSync} from 'node:fs';
 import {createServer} from 'node:http';
 import {readFile,mkdir,stat} from 'node:fs/promises';
 import {resolve,extname,join} from 'node:path';
@@ -7,18 +8,21 @@ import {pathToFileURL} from 'node:url';
 import {optimizeDocument} from '../web/core/document.js';
 const root=resolve('web');
 const mime={'.js':'text/javascript','.wasm':'application/wasm','.css':'text/css','.html':'text/html','.svg':'image/svg+xml','.webmanifest':'application/manifest+json','.png':'image/png'};
+let blockedWasm=false,releaseOverride=null;
 const server=createServer(async(req,res)=>{try{
  const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname),p=resolve(root,'.'+(pathname==='/'?'/index.html':pathname));
- if(!p.startsWith(root+'/'))throw Error('path');const bytes=await readFile(p);res.writeHead(200,{'Content-Type':mime[extname(p)]||'application/octet-stream','Cache-Control':'no-cache'});res.end(bytes);
+ if(!p.startsWith(root+'/'))throw Error('path');if(blockedWasm&&p.endsWith('.wasm'))throw Error('blocked fixture');let bytes=await readFile(p);if(releaseOverride&&p.endsWith('/release.js'))bytes=Buffer.from(bytes.toString().replace('2026.10.15.1',releaseOverride));res.writeHead(200,{'Content-Type':mime[extname(p)]||'application/octet-stream','Cache-Control':'no-cache'});res.end(bytes);
 }catch{res.writeHead(404);res.end('Not found');}});
 await new Promise((r,j)=>{server.once('error',j);server.listen(0,'127.0.0.1',r)});
 const baseURL='http://127.0.0.1:'+server.address().port;
 let pw;try{pw=await import('playwright');}catch{pw=await import(pathToFileURL(process.env.DOCTOOLS_PLAYWRIGHT||join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs')).href);}
-const executablePath=process.env.DOCTOOLS_CHROMIUM||join(homedir(),'Library/Caches/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-mac-arm64/chrome-headless-shell');
+const bundledChrome=join(homedir(),'Library/Caches/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-mac-arm64/chrome-headless-shell');
+const executablePath=process.env.DOCTOOLS_CHROMIUM||(existsSync(bundledChrome)?bundledChrome:undefined);
 let browser;
 try{
  browser=await pw.chromium.launch({headless:true,executablePath});
- const context=await browser.newContext({acceptDownloads:true}),page=await context.newPage(),errors=[],requests=[];
+ console.log('Browser version:',browser.version());
+ const context=await browser.newContext({acceptDownloads:true,serviceWorkers:'block'}),page=await context.newPage(),errors=[],requests=[];
  page.setDefaultTimeout(10000);
  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push({url:r.url(),method:r.method()}));
  await page.goto(baseURL);
@@ -56,4 +60,32 @@ try{
  assert.equal(errors.length,0,errors.join('\n'));assert.ok(requests.every(r=>r.method==='GET'&&r.url.startsWith(baseURL)),JSON.stringify(requests));
  console.log('Browser: optimize/download, integrity, signatures, uppercase extension, escaped filenames, no-op, cancellation/reselection, 320px layout, no uploads passed');
  await context.close();
+ // Fresh context proves first installation and complete cache independently of workflow tests.
+ const offlineContext=await browser.newContext({acceptDownloads:true});let offlinePage=await offlineContext.newPage();
+ await offlinePage.goto(baseURL);await offlinePage.getByText('Ready offline',{exact:true}).waitFor({timeout:30000});
+ await offlineContext.setOffline(true);await offlinePage.close();offlinePage=await offlineContext.newPage();offlinePage.setDefaultTimeout(15000);
+ await offlinePage.goto(baseURL);await offlinePage.getByText('Ready offline',{exact:true}).waitFor();
+ await offlinePage.getByLabel('Choose a DOCX file').setInputFiles('tests/fixtures/mixed.docx');await offlinePage.waitForFunction(()=>!document.querySelector('#optimize').disabled);
+ await offlinePage.getByRole('button',{name:'Optimize without quality loss'}).click();await offlinePage.getByRole('link',{name:'Download DOCX'}).waitFor({timeout:30000});
+ const od=offlinePage.waitForEvent('download');await offlinePage.getByRole('link',{name:'Download DOCX'}).click();await (await od).saveAs('tests/output/browser/offline.docx');
+ assert.equal((await optimizeDocument(new Uint8Array(await readFile('tests/output/browser/offline.docx')))).changed,false);
+ const keys=await offlinePage.evaluate(async()=>{const key=(await caches.keys()).find(k=>k.startsWith('doctools-assets-'));const cache=await caches.open(key);const keys=await cache.keys();await cache.delete(new URL('vendor/jpeg.wasm',location.href));window.dispatchEvent(new Event('focus'));return keys.map(r=>r.url);});
+ assert.ok(keys.every(k=>!k.endsWith('.docx')));await offlinePage.getByText(/Offline files incomplete/).waitFor();
+ await offlineContext.setOffline(false);await offlinePage.reload();await offlinePage.getByText('Ready offline',{exact:true}).waitFor({timeout:15000});
+ await offlineContext.close();console.log('Offline: initial installation, reload, new DOCX processing, download, missing-asset detection and repair passed');
+ const failedContext=await browser.newContext();blockedWasm=true;const failedPage=await failedContext.newPage();await failedPage.goto(baseURL);
+ await failedPage.getByText(/Offline preparation failed/).waitFor({timeout:15000});assert.equal(await failedPage.getByText('Ready offline',{exact:true}).count(),0);blockedWasm=false;await failedContext.close();
+ console.log('Offline: incomplete installation never advertises readiness');
+ // A real selection remains in inspection while only its first postMessage is gated.
+ const updateContext=await browser.newContext();const first=await updateContext.newPage(),second=await updateContext.newPage();
+ await first.goto(baseURL);await first.getByText('Ready offline',{exact:true}).waitFor({timeout:30000});await second.goto(baseURL);await second.getByText('Ready offline',{exact:true}).waitFor();
+ await second.evaluate(()=>{const original=Worker.prototype.postMessage;Worker.prototype.postMessage=function(data,...args){if(data.type==='inspect')return;return original.call(this,data,...args);};});
+ await second.getByLabel('Choose a DOCX file').setInputFiles('tests/fixtures/mixed.docx');
+ releaseOverride='2026.10.15.2';await first.evaluate(async()=>{await (await navigator.serviceWorker.getRegistration()).update();});
+ await first.getByRole('button',{name:'Update app'}).waitFor({timeout:30000});await first.getByRole('button',{name:'Update app'}).click();await first.getByText(/Finish or cancel processing/).waitFor({timeout:6000});
+ assert.equal(await second.getByRole('button',{name:'Cancel processing'}).isVisible(),true);
+ await second.getByRole('button',{name:'Cancel processing'}).click();
+ const newPage=first.waitForEvent('load');await first.getByRole('button',{name:'Update app'}).click();await newPage;await first.getByText('Ready offline',{exact:true}).waitFor({timeout:20000});
+ assert.equal(await first.evaluate(async()=>{const c=await caches.keys();return c.some(n=>n.startsWith('doctools-assets-2026.10.15.2-'));}),true);
+ await updateContext.close();releaseOverride=null;console.log('Offline: busy second window blocks update; idle windows update and reload');
 }finally{await browser?.close();await new Promise(r=>server.close(r));}

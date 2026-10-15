@@ -4,6 +4,7 @@
 #include <jpeglib.h>
 struct errors { struct jpeg_error_mgr base; jmp_buf jump; };
 static void fail(j_common_ptr p) { longjmp(((struct errors*)p->err)->jump,1); }
+static void warning(j_common_ptr p, int level) { if(level<0)fail(p); }
 static unsigned char *output;
 static unsigned long output_length;
 unsigned char *result_data(void) { return output; }
@@ -11,7 +12,7 @@ unsigned long result_size(void) { return output_length; }
 int optimize_jpeg(unsigned char *input, unsigned long length, int progressive) {
  struct jpeg_decompress_struct src={0}; struct jpeg_compress_struct dst={0}; struct errors err;
  free(output);output=NULL;output_length=0;
- src.err=jpeg_std_error(&err.base);err.base.error_exit=fail;
+ src.err=jpeg_std_error(&err.base);err.base.error_exit=fail;err.base.emit_message=warning;
  dst.err=&err.base;
  if(setjmp(err.jump)) { jpeg_destroy_decompress(&src);jpeg_destroy_compress(&dst);free(output);output=NULL;output_length=0;return 0; }
  jpeg_create_decompress(&src);jpeg_mem_src(&src,input,length);

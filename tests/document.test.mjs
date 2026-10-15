@@ -18,3 +18,8 @@ test('aggregate expanded-byte limit rejects many small entries',async()=>{const 
 test('input-byte limit is enforced',async()=>{const src=await file('mixed.docx');await assert.rejects(()=>readArchive(src,{input:10}),/limit/i);});
 test('UTF16 main document can be inspected',async()=>{assert.equal((await inspectDocument(await file('utf16.docx'))).images.length,5);});
 test('false declared ZIP sizes are rejected',async()=>{const src=await file('false-size.docx');await assert.rejects(()=>inspectDocument(src));});
+test('real Word package preserves comments, tracked changes, headers and layout XML',async()=>{
+ const src=await file('realistic.docx'),result=await optimizeDocument(src);assert.ok(result.changed);
+ const a=await readArchive(src),b=await readArchive(result.bytes);try{for(const e of a.entries)if(!e.name.startsWith('word/media/'))assert.deepEqual(await a.read(e.name),await b.read(e.name),e.name);}finally{await a.close();await b.close();}
+ await writeFile('tests/output/realistic.docx',result.bytes);
+});

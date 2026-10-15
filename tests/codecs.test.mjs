@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {existsSync} from 'node:fs';import {homedir} from 'node:os';import {join} from 'node:path';
+const bundledPython=join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3');
+const python=process.env.DOCTOOLS_PYTHON||(existsSync(bundledPython)?bundledPython:'python3');
 import {optimizeImage} from '../web/core/images.js';
 const read=async n=>new Uint8Array(await readFile('tests/fixtures/'+n));
 for (const name of ['RGBA.png','P.png','L.png','RGB.png','photo.jpg','progressive.jpg','gray.jpg']) {
@@ -26,5 +29,8 @@ test('interlaced optimization preserves actual decoded samples',async()=>{
  const src=await read('interlaced.png'),r=await optimizeImage(src,'word/media/interlaced.png');
  await writeFile('tests/output/codecs/interlaced.png',r.bytes);
  const {execFileSync}=await import('node:child_process');
- execFileSync(process.env.DOCTOOLS_PYTHON||'/Users/nfp/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3',['scripts/image-oracle.py','tests/fixtures','tests/output/codecs']);
+ execFileSync(python,['scripts/image-oracle.py','tests/fixtures','tests/output/codecs']);
+});
+test('truncated JPEG is preserved rather than silently repaired',async()=>{
+ const original=(await read('photo.jpg')).slice(0,-100),r=await optimizeImage(original,'word/media/truncated.jpg');assert.deepEqual(r.bytes,original);assert.notEqual(r.status,'optimized');
 });
