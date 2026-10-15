@@ -36,12 +36,12 @@
   },
   {
     "name": "jpeg.js",
-    "bytes": 13673,
-    "sha256": "734696197f15b530eef296bd1fa4315518cd8ceb122abb948d8df795f6236733"
+    "bytes": 14123,
+    "sha256": "6a602162ee905bc629a6f22dbf6ff70430eaec61d79792ab638f4b485b281628"
   },
   {
     "name": "jpeg.wasm",
-    "bytes": 286561,
-    "sha256": "fa042c49cc3b5c20dcbdfe43119ccd7f344a94fc60f12f89a828b99903629a23"
+    "bytes": 542365,
+    "sha256": "d3a861a4f8e6fced36a47ee13a27d0058ebfc4915a0f028cc7c00465449d330d"
   }
 ]

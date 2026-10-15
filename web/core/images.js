@@ -1,6 +1,6 @@
 import {pngInfo,optimizePng,equal} from './png.js';
 import {verifyPngPixels} from './png-pixels.js';
-import {jpegInfo,optimizeJpeg} from './jpeg.js';
+import {jpegInfo,optimizeJpeg,recompressJpeg} from './jpeg.js';
 export function imageInfo(bytes,path){
  const ext=path.split('.').pop().toLowerCase();
  if(ext==='png')return {format:'PNG',...pngInfo(bytes)};
@@ -20,7 +20,8 @@ export async function verifyImage(original,candidate,path,options={}){
   if(left.length!==right.length||left.some((c,i)=>!equal(c.raw,right[i].raw)))throw Error('PNG metadata changed');
   await verifyPngPixels(original,candidate,{colors:options.mode==='colors'});
  }else if(a.format==='JPEG'){
-  if(!equal(a.frame,b.frame)||a.metadata.length!==b.metadata.length||a.metadata.some((v,i)=>!equal(v,b.metadata[i])))throw Error('JPEG frame or metadata changed');
+  const frameMatches=options.mode==='colors'?a.frame.length===b.frame.length&&a.frame.every((v,i)=>i>=8&&(i-8)%3===0||v===b.frame[i]):equal(a.frame,b.frame);
+  if(!frameMatches||a.metadata.length!==b.metadata.length||a.metadata.some((v,i)=>!equal(v,b.metadata[i])))throw Error('JPEG frame or metadata changed');
  }
 }
 export async function optimizeImage(bytes,path,codecs={},options={}){
@@ -42,6 +43,13 @@ export async function optimizeImage(bytes,path,codecs={},options={}){
     await verifyImage(bytes,candidate,path,options);
     if(candidate.length<best.bytes.length)best={...result,bytes:candidate,status:'optimized',perceptual:true,reason:'Color reduction (up to '+(options.colors??128)+' colors); review preview'};
    }catch(e){best.reason+='; color reduction skipped: '+e.message;}
+  }
+  if(options.mode==='colors'&&info.format==='JPEG'){
+   try{
+    const candidate=await recompressJpeg(bytes,options.jpegQuality??70);
+    await verifyImage(bytes,candidate,path,options);
+    if(candidate.length<best.bytes.length)best={...result,bytes:candidate,status:'optimized',perceptual:true,reason:'JPEG quality '+(options.jpegQuality??70)+'; review preview'};
+   }catch(e){best.reason+='; JPEG quality reduction skipped: '+e.message;}
   }
   return best;
  }catch(e){return {...result,status:'failed',reason:'Original retained: '+e.message};}

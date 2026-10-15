@@ -1,10 +1,10 @@
 # Doctools verification
 
-Verification date: 2026-10-15. This is a local development result; no live site has been deployed.
+Verification date: 2026-10-16. This is a local development result; no live site has been deployed.
 
 ## Automated checks
 
-- `npm test`: 57 passing tests covering codec preservation, DOCX round trips, unsafe/corrupt/unsupported archives, encrypted and signed input, entity declarations, UTF16 XML, Strict OOXML namespaces, relationship resolution, limits, no-op results, optional color reduction, unchanged alpha samples, and release inventory/hash consistency.
+- `npm test`: 68 passing tests covering codec preservation, DOCX round trips, unsafe/corrupt/unsupported archives, encrypted and signed input, entity declarations, UTF16 XML, Strict OOXML namespaces, relationship resolution, limits, no-op results, optional PNG/JPEG quality reduction, unchanged alpha samples, standalone file routing, JPEG late metadata, and release inventory/hash consistency.
 - `npm run test:browser`: headless Chromium 153.0.8010.12 using Playwright 1.62.1. File selection, worker processing, download, output integrity, escaped filenames, uppercase extension, no-op, signature rejection, cancellation/reselection, 320px layout, no document uploads, offline installation/reload/new-file optimization, cache repair, failed installation, and two-window update protection passed. A persistent first-install deployment-transition regression also verifies that page and controller converge on the same complete release.
 - Independent image oracle: Pillow raw pixels, dimensions and metadata comparisons; native jpegtran canonical output comparison to establish JPEG coefficient and metadata preservation. Includes transparent, palette, grayscale, interlaced PNG and baseline/progressive JPEG. Truncated JPEGs are preserved instead of silently repaired. Unsupported CMYK and animated PNG are retained.
 - A realistic python-docx fixture includes visible PNG/JPEG images, a shared header image, footer, comment and tracked insertion. All unchanged package-part bytes compare exactly after optimization.
@@ -22,7 +22,7 @@ Generated fixtures are synthetic and contain no personal records. Screenshots an
 
 These small fixtures are correctness checks, not typical-document benchmarks. ZIP already compresses parts of the original PNG data. Savings depend on the source images and the surrounding archive.
 
-The measured Node process peak RSS reached approximately 114 MiB across those two operations. This is a whole-process high-water mark for small inputs, not a browser/mobile memory measurement or a maximum-size document guarantee. The current complete cached app is approximately 1.08 MiB before transport compression, including the exact-pixel PNG decoder and optional color reducer added below. PNG optimization is single-threaded; JPEG WebAssembly memory growth is capped at 512 MiB.
+The measured Node process peak RSS reached approximately 114 MiB across those two operations. This predates optional JPEG recompression and is a whole-process high-water mark for small inputs, not a browser/mobile memory measurement or a maximum-size document guarantee. The current complete cached app is approximately 1.33 MiB before transport compression, including the exact-pixel PNG decoder, PNG color reducer and expanded JPEG codec. PNG optimization is single-threaded; JPEG WebAssembly memory growth is capped at 512 MiB.
 
 History restoration checks dispatch persisted `pagehide`/`pageshow` events in ready, processing and result states. An actual BFCache restore was unavailable in headless Chromium, so physical browser-history verification remains outstanding. The release mismatch protocol also has a focused unit regression proving that new work is blocked while reload waits for an active operation to become idle.
 
@@ -34,7 +34,7 @@ The independent final review found two important lifecycle issues. Both were fix
 - Safari 17, Firefox 121, Edge 120, physical devices and an actual installed-PWA window were not verified. Browser floors are targets, not claims established by the Chromium tests. Service-worker and manifest behavior was tested in normal Chromium contexts.
 - Large files near the published memory/size limits need device-specific benchmarking. Mobile large-document processing remains outside verified scope.
 - Manual screen-reader evaluation and physical touch verification remain outstanding. Automated 200% text layout and keyboard traversal are covered by the browser suite.
-- Comparison of complete representative documents and the user's LightImage settings remains outstanding; one supplied PNG pair is measured below. Strict lossless savings are not promised to match LightImage.
+- Comparison of complete representative documents and the user's LightImage settings remains outstanding; supplied PNG and JPEG pairs are measured below. Strict lossless savings are not promised to match LightImage.
 
 ## Reproducing checks
 
@@ -68,3 +68,13 @@ Independent Pillow comparisons confirm dimensions of 597 × 1067 and unchanged a
 The new synthetic textured fixture proves smaller color-reduced output than exact lossless, unchanged input bytes, a valid bounded palette, dimensions and metadata preservation, and protection of other DOCX parts. A negative test proves a changed alpha value is rejected even in color mode. The existing independent lossless oracle still passes all 12 image fixtures.
 
 Chromium browser checks cover both modes, palette selection, invalidation of an old download after settings changes, lazy preview image loading, closing, actual-pixel zoom, synchronized scrolling, and a 320px preview layout. Full offline reload then color reduction and preview succeed with cached dependencies. Desktop and narrow screenshots were inspected. Older-browser, installed-app, physical-device and maximum-size memory gaps above remain applicable.
+
+## JPEG quality reduction and standalone images
+
+The supplied original JPEG is 2,036,321 bytes at 2160 × 3840. LightImage produces 790,030 bytes (61.2% smaller), changes quantization tables, retains 4:2:0 sampling and has a mean absolute RGB difference of 1.362/255 from the decoded original. The new optional JPEG quality 70 produces 808,996 bytes (60.3% smaller), retains dimensions and sampling, and has mean absolute RGB difference 1.502/255. Pillow independently confirms the app's original APP/COM metadata is identical. LightImage's metadata differs, including an added sRGB profile. These are raw RGB comparisons with the same decoder, not guarantees of identical appearance or a recovery of LightImage's quality setting.
+
+The quality regressions exercise baseline, progressive and grayscale JPEGs, changing quality only in optional mode, invalid settings/truncated input fallback, metadata preservation and protection of other DOCX parts. Pillow independently decodes all three quality outputs and confirms dimensions, sampling, color mode and APP/COM metadata. The default lossless oracle continues to pass all 12 fixtures.
+
+Focused review reproduced loss of a valid COM marker after baseline scan data. The added test failed before the fix and passes after full-scan metadata inspection/restoration. A clean candidate without that marker is now rejected. Native jpegtran independently parses the retained late comment from the corrected output.
+
+Browser checks exercise standalone JPEG/PNG selection, the appropriate per-format controls, correct download name/type, preview, EXIF-rotated JPEG display, invalid PNG rejection, settings invalidation and standalone lossless JPEG preview. After a completely offline reload, both standalone formats optimize and preview successfully, alongside the existing DOCX flow. The JPEG preview screenshot was inspected. Deployment-transition tests now change only the synthetic release identifier and work across human-readable release dates. No private user image was added to repository fixtures, and no files were uploaded or originals modified.

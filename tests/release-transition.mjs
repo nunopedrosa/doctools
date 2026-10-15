@@ -11,7 +11,7 @@ const mime={'.js':'text/javascript','.wasm':'application/wasm','.html':'text/htm
 const server=createServer(async(req,res)=>{try{
  const name=new URL(req.url,'http://localhost').pathname;const path=resolve(root,'.'+(name==='/'?'/index.html':name));if(!path.startsWith(root+'/'))throw Error('Invalid path');
  let bytes=await readFile(path);
- if(name==='/release.js'&&++releaseReads>1)bytes=Buffer.from(bytes.toString().replace('2026.10.15.1','2026.10.15.2'));
+ if(name==='/release.js'&&++releaseReads>1)bytes=Buffer.from(bytes.toString().replace(/export const VERSION="[^"-]+-/, 'export const VERSION="2026.10.15.2-'));
  res.writeHead(200,{'Content-Type':mime[extname(path)]||'application/octet-stream','Cache-Control':'no-cache'});res.end(bytes);
 }catch{res.writeHead(404);res.end();}});
 await new Promise((r,j)=>{server.once('error',j);server.listen(0,'127.0.0.1',r)});
