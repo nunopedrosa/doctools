@@ -6,7 +6,7 @@ The approved PWA was implemented natively in this chat on `codex/local-docx-pwa`
 
 - Used the existing clean checkout on a dedicated feature branch to keep the user's working location stable. Cost: implementation files are visible in that checkout, without a separate worktree.
 - Built a small coefficient-preserving libjpeg-turbo wrapper with Emscripten 4.0.18 because a verifiable prebuilt browser wrapper was unavailable. Cost: maintaining the native wrapper and reproducible compiler instructions.
-- Retain original PNGs when optimization changes the sample or palette representation, even where an equivalent representation might compress better. Cost: missed savings; image and metadata preservation takes precedence.
+- The initial implementation retained all PNG representation changes. User feedback exposed that this rejected useful lossless savings. The corrected implementation compares exact decoded pixels and allows equivalent representations while preserving metadata. Cost: an additional decoder, CPU and memory; no pixel-quality concession. Representation-dependent metadata still receives conservative fallback.
 - Include a digest of every runtime asset, including the service worker, in the release identity. Cost: longer identifiers and a new cache identity for each runtime change; this protects the active cache during failed updates.
 
 ## Independent review and fixes

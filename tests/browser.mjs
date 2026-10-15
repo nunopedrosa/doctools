@@ -41,6 +41,10 @@ try{
  assert.equal((await optimizeDocument(output)).changed,false);
  await page.screenshot({path:'tests/output/browser/desktop.png',fullPage:true});
  await page.getByRole('button',{name:'Clear document'}).click();assert.equal(await page.getByRole('link',{name:'Download DOCX'}).count(),0);
+ await page.getByLabel('Choose a DOCX file').setInputFiles('tests/fixtures/representation.docx');await page.waitForFunction(()=>!document.querySelector('#optimize').disabled);
+ await page.getByRole('button',{name:'Optimize without quality loss'}).click();await page.getByRole('link',{name:'Download DOCX'}).waitFor();
+ assert.equal(await page.getByText('PNG pixel values changed; original retained',{exact:false}).count(),0);
+ await page.getByRole('button',{name:'Clear document'}).click();
  await page.getByLabel('Choose a DOCX file').setInputFiles('tests/fixtures/signed.docx');
  await page.getByRole('alert').filter({hasText:/sign/i}).waitFor();
  await page.getByLabel('Choose a DOCX file').setInputFiles({name:'<img src=x>.DOCX',mimeType:'application/octet-stream',buffer:await readFile('tests/fixtures/empty.docx')});

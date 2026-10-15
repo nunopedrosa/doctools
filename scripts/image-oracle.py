@@ -9,7 +9,12 @@ for p in sorted(output.iterdir()):
  a=original/p.name
  with Image.open(a) as x,Image.open(p) as y:
   assert x.size==y.size,(p,'dimensions')
-  assert x.convert('RGBA').tobytes()==y.convert('RGBA').tobytes(),(p,'pixels')
+  if x.mode in ('I;16','I;16B','I'):
+   left=list(x.get_flattened_data())
+   right=list(y.get_flattened_data()) if y.mode in ('I;16','I;16B','I') else [v*257 for v in y.convert('L').get_flattened_data()]
+   assert left==right,(p,'16-bit samples')
+  else:
+   assert x.convert('RGBA').tobytes()==y.convert('RGBA').tobytes(),(p,'pixels')
   if p.suffix=='.png':
    # Palette indices are compared through RGBA above, including transparent RGB values.
    for k in ('icc_profile','dpi','gamma','Author','exif'):

@@ -34,3 +34,29 @@ test('interlaced optimization preserves actual decoded samples',async()=>{
 test('truncated JPEG is preserved rather than silently repaired',async()=>{
  const original=(await read('photo.jpg')).slice(0,-100),r=await optimizeImage(original,'word/media/truncated.jpg');assert.deepEqual(r.bytes,original);assert.notEqual(r.status,'optimized');
 });
+for(const name of ['opaque-diagram.png','gray-diagram.png'])test('accepts pixel-identical PNG representation changes: '+name,async()=>{
+ const src=await read(name),r=await optimizeImage(src,'word/media/'+name);
+ assert.equal(r.status,'optimized',r.reason);assert.ok(r.bytes.length<src.length*.7);
+ await writeFile('tests/output/codecs/'+name,r.bytes);
+});
+test('rejects codec output that changes a PNG pixel',async()=>{
+ const src=await read('opaque-diagram.png'),changed=await read('changed-pixels.png');
+ const r=await optimizeImage(src,'word/media/image.png',{png:async()=>changed});
+ assert.equal(r.status,'failed');assert.deepEqual(r.bytes,src);
+});
+test('dependent PNG background metadata remains valid and unchanged',async()=>{
+ const src=await read('background.png'),r=await optimizeImage(src,'word/media/background.png');
+ if(r.status==='optimized')await writeFile('tests/output/codecs/background.png',r.bytes);else assert.deepEqual(r.bytes,src);
+});
+for(const name of ['gray16.png','gray16-reducible.png'])test('preserves all 16-bit PNG samples: '+name,async()=>{
+ const src=await read(name),r=await optimizeImage(src,'word/media/'+name);assert.equal(r.status,'optimized',r.reason);await writeFile('tests/output/codecs/'+name,r.bytes);
+});
+test('preserves truecolor suggested palettes and rejects their removal',async()=>{
+ const {pngInfo}=await import('../web/core/png.js');
+ const {verifyImage}=await import('../web/core/images.js');
+ const rgb=await read('RGB.png'),palette=pngInfo(await read('P.png')).chunks.find(c=>c.type==='PLTE').raw;
+ const src=new Uint8Array(rgb.length+palette.length);src.set(rgb.slice(0,33));src.set(palette,33);src.set(rgb.slice(33),33+palette.length);
+ await assert.rejects(verifyImage(src,rgb,'word/media/image.png'),/palette|metadata/i);
+ const result=await optimizeImage(src,'word/media/image.png');
+ assert.deepEqual(pngInfo(result.bytes).chunks.find(c=>c.type==='PLTE')?.raw,palette);
+});

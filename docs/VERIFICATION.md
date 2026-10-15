@@ -4,7 +4,7 @@ Verification date: 2026-10-15. This is a local development result; no live site 
 
 ## Automated checks
 
-- `npm test`: 45 passing tests covering codec preservation, DOCX round trips, unsafe/corrupt/unsupported archives, encrypted and signed input, entity declarations, UTF16 XML, Strict OOXML namespaces, relationship resolution, limits, no-op results, and release inventory/hash consistency.
+- `npm test`: 53 passing tests covering codec preservation, DOCX round trips, unsafe/corrupt/unsupported archives, encrypted and signed input, entity declarations, UTF16 XML, Strict OOXML namespaces, relationship resolution, limits, no-op results, and release inventory/hash consistency.
 - `npm run test:browser`: headless Chromium 153.0.8010.12 using Playwright 1.62.1. File selection, worker processing, download, output integrity, escaped filenames, uppercase extension, no-op, signature rejection, cancellation/reselection, 320px layout, no document uploads, offline installation/reload/new-file optimization, cache repair, failed installation, and two-window update protection passed. A persistent first-install deployment-transition regression also verifies that page and controller converge on the same complete release.
 - Independent image oracle: Pillow raw pixels, dimensions and metadata comparisons; native jpegtran canonical output comparison to establish JPEG coefficient and metadata preservation. Includes transparent, palette, grayscale, interlaced PNG and baseline/progressive JPEG. Truncated JPEGs are preserved instead of silently repaired. Unsupported CMYK and animated PNG are retained.
 - A realistic python-docx fixture includes visible PNG/JPEG images, a shared header image, footer, comment and tracked insertion. All unchanged package-part bytes compare exactly after optimization.
@@ -22,7 +22,7 @@ Generated fixtures are synthetic and contain no personal records. Screenshots an
 
 These small fixtures are correctness checks, not typical-document benchmarks. ZIP already compresses parts of the original PNG data. Savings depend on the source images and the surrounding archive.
 
-The measured Node process peak RSS reached approximately 114 MiB across those two operations. This is a whole-process high-water mark for small inputs, not a browser/mobile memory measurement or a maximum-size document guarantee. The complete cached app is approximately 833 KiB before transport compression. PNG optimization is single-threaded; JPEG WebAssembly memory growth is capped at 512 MiB.
+The measured Node process peak RSS reached approximately 114 MiB across those two operations. This is a whole-process high-water mark for small inputs, not a browser/mobile memory measurement or a maximum-size document guarantee. The current complete cached app is approximately 1.01 MiB before transport compression, including the exact-pixel PNG decoder added in the correction below. PNG optimization is single-threaded; JPEG WebAssembly memory growth is capped at 512 MiB.
 
 History restoration checks dispatch persisted `pagehide`/`pageshow` events in ready, processing and result states. An actual BFCache restore was unavailable in headless Chromium, so physical browser-history verification remains outstanding. The release mismatch protocol also has a focused unit regression proving that new work is blocked while reload waits for an active operation to become idle.
 
@@ -34,8 +34,20 @@ The independent final review found two important lifecycle issues. Both were fix
 - Safari 17, Firefox 121, Edge 120, physical devices and an actual installed-PWA window were not verified. Browser floors are targets, not claims established by the Chromium tests. Service-worker and manifest behavior was tested in normal Chromium contexts.
 - Large files near the published memory/size limits need device-specific benchmarking. Mobile large-document processing remains outside verified scope.
 - Manual screen-reader evaluation and physical touch verification remain outstanding. Automated 200% text layout and keyboard traversal are covered by the browser suite.
-- Comparison with the user's LightImage settings and representative real documents remains outstanding. Strict lossless savings are not promised to match LightImage.
+- Comparison of complete representative documents and the user's LightImage settings remains outstanding; one supplied PNG pair is measured below. Strict lossless savings are not promised to match LightImage.
 
 ## Reproducing checks
 
 Follow the dependencies and commands in `README.md`. The browser test creates its own loopback server and isolated browser contexts. For the render comparison, convert `tests/fixtures/realistic.docx` and `tests/output/realistic.docx` separately with LibreOffice, then render both at the same scale with Poppler and compare the PNG pixels. Original and output document parts can also be independently compared with Python's `zipfile`.
+
+## PNG compression correction
+
+The app's report showed ten PNGs skipped solely because OxiPNG changed their internal representation. A synthetic diagram reproduced the defect: 11,976 B became 5,651 B (52.8% smaller), with identical dimensions and all RGBA pixels, but the original guard rejected it. This is a correctness improvement to lossless optimization, without introducing perceptual/lossy compression.
+
+Regression tests now accept exact-pixel palette and grayscale changes and reject a codec result with a changed pixel. Both 8-bit and 16-bit images are checked; representation-dependent metadata receives conservative fallback. The independent oracle passes 12 image fixtures, and the complete DOCX/browser/offline suites pass with the new decoder included in the release cache. The fixture generator's comment timestamp normalization was corrected for python-docx 1.2.0; the realistic fixture now regenerates successfully.
+
+The supplied original/LightImage PNG pair was compared locally after this correction. Both are 597 × 1067 pixels. The original is 499,645 B with 70,962 distinct RGBA colors; LightImage's result is 59,138 B with a 30-color indexed palette (88.164% smaller). Alpha is identical, but 58.585% of pixels have changed RGB values, with mean absolute RGB channel difference 2.938/255. This establishes pixel-changing color reduction for this example; it does not establish the tool's settings or behavior on other inputs.
+
+The corrected strict lossless engine produces 339,511 B from that original (32.050% smaller). An independent Pillow RGBA comparison confirms every decoded pixel and the dimensions are identical. The supplied files were not modified or copied into repository fixtures. Matching LightImage's reduction would require a separately authorized perceptual mode; strict lossless remains the current policy.
+
+Focused review also found that truecolor PNG suggested palettes must be treated as metadata. A failing regression demonstrated their removal was previously accepted. Optimization now retains the original when a representation change would discard such a palette, and final verification independently rejects palette removal. All 53 unit tests pass.

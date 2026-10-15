@@ -31,7 +31,7 @@ You can also host the contents of `web/` on an HTTPS static site. Serve `.wasm` 
 
 ## Preservation and limits
 
-Only existing PNG and JPEG images under `word/media/` are candidates for optimization. The app preserves image filenames, extensions, dimensions, metadata, transparency and quality. JPEG processing preserves the original quantized coefficients. PNG processing preserves samples and original non-image-data chunks. It preserves unsupported variants, animated PNGs and other formats unchanged, with a reason in the report.
+Only existing PNG and JPEG images under `word/media/` are candidates for optimization. The app preserves image filenames, extensions, dimensions, metadata, transparency and quality. JPEG processing preserves the original quantized coefficients. PNG processing compares exact decoded pixels, including transparency and 16-bit samples, and preserves original nonstructural metadata. Lossless changes such as removing an unused alpha channel or using an exact palette are allowed. It preserves unsupported variants, animated PNGs and other formats unchanged, with a reason in the report.
 
 All other package parts, including XML, relationships, comments, tracked changes, headers/footers and embedded objects, retain identical extracted bytes. ZIP container bytes and offsets can change. Output is reopened and checked before a download is offered.
 

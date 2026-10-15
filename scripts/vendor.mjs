@@ -4,6 +4,8 @@ import {createHash} from 'node:crypto';
 await mkdir('web/vendor/licenses',{recursive:true});
 for(const [from,to] of [
  ['@jsquash/oxipng/codec/pkg/squoosh_oxipng.js','oxipng.js'],
+ ['@jsquash/png/codec/pkg/squoosh_png.js','png-decode.js'],
+ ['@jsquash/png/codec/pkg/squoosh_png_bg.wasm','squoosh_png_bg.wasm'],
  ['@jsquash/oxipng/codec/pkg/squoosh_oxipng_bg.wasm','squoosh_oxipng_bg.wasm'],
  ['@zip.js/zip.js/index.js','zip.js']
 ]){
@@ -11,9 +13,10 @@ for(const [from,to] of [
  else await copyFile('node_modules/'+from,'web/vendor/'+to);
 }
 await build({entryPoints:['node_modules/@xmldom/xmldom/lib/index.js'],bundle:true,format:'esm',outfile:'web/vendor/xml.js',minify:true});
-for(const [pkg,name] of [['@jsquash/oxipng','oxipng'],['@zip.js/zip.js','zip'],['@xmldom/xmldom','xml']]){
+for(const [pkg,name] of [['@jsquash/oxipng','oxipng'],['@jsquash/png','png'],['@zip.js/zip.js','zip'],['@xmldom/xmldom','xml']]){
  for(const filename of ['LICENSE','LICENSE.md','LICENSE.txt']){try{await copyFile('node_modules/'+pkg+'/'+filename,'web/vendor/licenses/'+name+'.txt');break;}catch{}}
 }
-const files=['zip.js','xml.js','oxipng.js','squoosh_oxipng_bg.wasm','jpeg.js','jpeg.wasm'];
+await copyFile('node_modules/@jsquash/png/codec/LICENSE.codec.md','web/vendor/licenses/png-codec.txt');
+const files=['png-decode.js','squoosh_png_bg.wasm','zip.js','xml.js','oxipng.js','squoosh_oxipng_bg.wasm','jpeg.js','jpeg.wasm'];
 const rows=[];for(const name of files){try{const b=await readFile('web/vendor/'+name);rows.push({name,bytes:b.length,sha256:createHash('sha256').update(b).digest('hex')});}catch{}}
 await writeFile('docs/vendor-manifest.json',JSON.stringify(rows,null,2)+'\n');

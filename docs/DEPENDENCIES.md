@@ -6,6 +6,7 @@ All runtime dependencies are vendored under `web/vendor/`; there are no CDN impo
 | --- | --- | --- | --- |
 | zip.js | 2.23.0 | BSD-3-Clause | Strict streamed ZIP reading and pass-through writing |
 | jSquash OxiPNG | 2.3.0 | Apache-2.0 / MIT | Binary PNG optimization; single-thread wrapper only |
+| jSquash PNG | 3.1.1 | Apache-2.0 / bundled codec license | Exact decoded PNG pixel comparison, including 16-bit samples |
 | xmldom | 0.9.12 | MIT | Worker-compatible XML validation |
 | libjpeg-turbo | 3.1.2 | BSD/IJG/zlib, see bundled license | Coefficient-preserving JPEG transcoding |
 | Emscripten (maintainer only) | 4.0.18 | MIT and toolchain licenses | JPEG WebAssembly build |
@@ -17,7 +18,7 @@ Run `npm ci --ignore-scripts`, then `npm run vendor`. JPEG binaries are checked 
 
 The C wrapper reads existing quantized DCT coefficients and writes those same coefficients with optimized entropy encoding. It copies APP/COM markers and disables synthesized JFIF/Adobe markers. It tries sequential and progressive encoding and retains the smallest candidate. No geometric transforms or quality changes are available. CMYK and non-8-bit variants are preserved without optimization.
 
-The PNG adapter uses only the single-threaded OxiPNG module with alpha optimization disabled. It conservatively refuses sample/palette representation changes and restores all original non-IDAT chunks byte-for-byte, preserving their order. This can yield smaller savings than more permissive optimizers.
+The PNG adapter uses single-threaded OxiPNG with alpha optimization disabled. It accepts representation changes only after decoding both images with the bundled jSquash PNG decoder and comparing every unpremultiplied RGBA sample exactly. It uses 16-bit decoding whenever either representation is 16-bit. Candidate IHDR, PLTE, tRNS and IDAT are kept together; other original metadata payloads are preserved. Representation-dependent metadata, incompatible ICC color-model changes and unknown unsafe-to-copy chunks cause conservative fallback. The extra decoder module/binary adds approximately 185 KiB plus licenses and requires additional bounded per-image decoding memory and CPU; files near the published ceilings still need device-specific benchmarking.
 
 Independent tests use Pillow 12.3.0 and the installed native `jpegtran` to compare raw pixels and canonical coefficient-preserving JPEG output. Test tools are not shipped to browsers.
 
@@ -30,6 +31,6 @@ Source archive SHA-256 values used for the checked-in JPEG build:
 
 Acquire the source archives from the official GitHub repositories' `refs/tags/3.1.2.tar.gz` and `refs/tags/4.0.18.tar.gz` URLs respectively, and verify these hashes before rebuilding. Emscripten resolves SDK 4.0.18 to upstream build `df7d4d811503e86e7728326e3eabbc383cb8042d`.
 
-The initial published offline asset set is approximately 833 KiB uncompressed, including licenses and icons. A content digest in the release identifier changes whenever runtime content changes. The service worker verifies SHA-256 of fetched assets and only accepts a matching complete release. Test dependencies additionally include pinned Playwright 1.62.1, Pillow 12.3.0 and python-docx 1.2.0. The independent native JPEG oracle used libjpeg-turbo 3.2.0.
+The offline asset set with exact PNG verification is approximately 1.0 MiB uncompressed, including licenses and icons. A content digest in the release identifier changes whenever runtime content changes. The service worker verifies SHA-256 of fetched assets and only accepts a matching complete release. Test dependencies additionally include pinned Playwright 1.62.1, Pillow 12.3.0 and python-docx 1.2.0. The independent native JPEG oracle used libjpeg-turbo 3.2.0.
 
 The bundled jSquash codec identifies upstream OxiPNG v3.0.0 in its codec README. Its MIT attribution is preserved in `web/vendor/licenses/oxipng-upstream.txt`, acquired from the official tagged source.

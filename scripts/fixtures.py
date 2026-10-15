@@ -81,6 +81,24 @@ real.add_picture(str(root/'RGBA.png'),width=Inches(2.5));real.add_paragraph('PNG
 real.add_picture(str(root/'photo.jpg'),width=Inches(2.5));real.add_paragraph('JPEG with EXIF orientation and a preserved color profile.')
 real.sections[0].header.paragraphs[0].add_run().add_picture(str(root/'RGBA.png'),width=Inches(.5))
 real.sections[0].footer.paragraphs[0].text='Preserve this footer.'
-real.comments._element[0].set(qn('w:date'),'2026-01-01T00:00:00Z')
+real.comments._comments_elm[0].set(qn('w:date'),'2026-01-01T00:00:00Z')
 buffer=io.BytesIO();real.save(buffer)
 with zipfile.ZipFile(buffer) as z:doc('realistic.docx',{n:z.read(n) for n in z.namelist()})
+# Lossless representation changes must not be confused with pixel changes.
+from PIL import ImageDraw
+for name,mode in [('opaque-diagram','RGBA'),('gray-diagram','RGB')]:
+ im=Image.new(mode,(640,400),'white');d=ImageDraw.Draw(im)
+ for n in range(12):
+  x=n%4*160;y=n//4*130
+  color=(n*20,n*20,n*20) if mode=='RGB' else (n*20,(12-n)*20,100,255)
+  d.rectangle((x+10,y+10,x+140,y+110),fill=color)
+ meta=PngImagePlugin.PngInfo();meta.add_text('Author','Preserve original metadata')
+ im.save(root/(name+'.png'),pnginfo=meta,dpi=(144,144))
+# Bit-depth-dependent metadata cannot simply be copied to a different representation.
+im=Image.open(root/'opaque-diagram.png');info=PngImagePlugin.PngInfo();info.add(b'bKGD',struct.pack('>HHH',255,255,255));im.save(root/'background.png',pnginfo=info)
+# A valid same-size but different-pixel image for negative codec verification.
+im=Image.open(root/'opaque-diagram.png');im.putpixel((30,30),(255,0,255,255));meta=PngImagePlugin.PngInfo();meta.add_text('Author','Preserve original metadata');im.save(root/'changed-pixels.png',pnginfo=meta,dpi=(144,144))
+p=package(False);p['word/media/diagram.png']=(root/'opaque-diagram.png').read_bytes();doc('representation.docx',p,zipfile.ZIP_STORED)
+for name,reducible in [('gray16',False),('gray16-reducible',True)]:
+ im=Image.new('I;16',(128,128));im.putdata([((x*257)%65536 if reducible else (x*521+13)%65536) for x in range(128*128)])
+ im.save(root/(name+'.png'),compress_level=0)

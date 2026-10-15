@@ -23,3 +23,7 @@ test('real Word package preserves comments, tracked changes, headers and layout 
  const a=await readArchive(src),b=await readArchive(result.bytes);try{for(const e of a.entries)if(!e.name.startsWith('word/media/'))assert.deepEqual(await a.read(e.name),await b.read(e.name),e.name);}finally{await a.close();await b.close();}
  await writeFile('tests/output/realistic.docx',result.bytes);
 });
+test('DOCX accepts exact-pixel PNG color representation reduction',async()=>{
+ const original=await file('representation.docx'),result=await optimizeDocument(original);assert.ok(result.changed);assert.ok(result.images.some(i=>i.status==='optimized'));assert.ok(result.bytes.length<original.length);
+ await writeFile('tests/output/representation.docx',result.bytes);
+});

@@ -19,7 +19,7 @@ export async function optimizeDocument(bytes,onProgress=()=>{}){
    await validatePackage(b);
    if(a.entries.length!==b.entries.length||a.entries.some(e=>!b.entries.some(f=>f.name===e.name)))throw Error('Output package entries changed');
    for(const e of a.entries){const src=await a.read(e.name),out=await b.read(e.name);if(replacements.has(e.name)){
-    if(!equal(out,replacements.get(e.name)))throw Error('Output image mismatch');verifyImage(src,out,e.name);
+    if(!equal(out,replacements.get(e.name)))throw Error('Output image mismatch');await verifyImage(src,out,e.name);
    }else if(!equal(src,out))throw Error('Output changed a protected document part');}
   }finally{await b.close();}
   return candidate.length<bytes.length?{bytes:candidate,changed:true,images}:{bytes,changed:false,images:images.map(i=>({...i,status:i.status==='optimized'?'efficient':i.status,reason:i.status==='optimized'?'Original retained: complete package did not shrink':i.reason,after:i.before}))};
