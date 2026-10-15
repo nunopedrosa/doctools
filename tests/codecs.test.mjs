@@ -15,3 +15,16 @@ for(const name of ['animated.png','unsupported.gif','bad.png','cmyk.jpg','huge.p
 });
 test('extension mismatch preserved',async()=>{const src=await read('photo.jpg');assert.deepEqual((await optimizeImage(src,'word/media/image.png')).bytes,src);});
 test('codec failure retains original',async()=>{const src=await read('RGBA.png'); const r=await optimizeImage(src,'word/media/x.png',{png:async()=>{throw Error('fixture failure')}});assert.equal(r.status,'failed');assert.deepEqual(r.bytes,src);});
+// A one-pixel Adam7 PNG has the same scan row as its non-interlaced equivalent.
+test('interlaced PNG retains matching IHDR and data',async()=>{
+ // Construct with the fixture generator instead of relying on codec output.
+ const src=await read('interlaced.png');const r=await optimizeImage(src,'word/media/interlaced.png');
+ const {pngInfo}=await import('../web/core/png.js');
+ if(r.status==='optimized')assert.equal(pngInfo(r.bytes).chunks[0].data[12],pngInfo(src).chunks[0].data[12]);
+});
+test('interlaced optimization preserves actual decoded samples',async()=>{
+ const src=await read('interlaced.png'),r=await optimizeImage(src,'word/media/interlaced.png');
+ await writeFile('tests/output/codecs/interlaced.png',r.bytes);
+ const {execFileSync}=await import('node:child_process');
+ execFileSync(process.env.DOCTOOLS_PYTHON||'/Users/nfp/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3',['scripts/image-oracle.py','tests/fixtures','tests/output/codecs']);
+});

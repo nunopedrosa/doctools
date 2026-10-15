@@ -22,9 +22,9 @@ export async function optimizePng(bytes){
   const binary=url.protocol==='file:'?new Uint8Array(await (await import('node:fs/promises')).readFile(url)):await (await fetch(url)).arrayBuffer();
   await init(binary);
  })();await ready;
- const original=pngInfo(bytes),out=optimise(bytes,2,false,false),candidate=pngInfo(out);
+ const original=pngInfo(bytes),out=optimise(bytes,2,original.chunks[0].data[12]===1,false),candidate=pngInfo(out);
  // Conservatively retain the original when optimization changes its sample/palette representation.
- if(!equal(original.chunks[0].data.slice(0,10),candidate.chunks[0].data.slice(0,10)))throw Error('Sample representation changed; original retained');
+ if(!equal(original.chunks[0].data,candidate.chunks[0].data))throw Error('Sample representation changed; original retained');
  for(const type of ['PLTE','tRNS']){
   const a=original.chunks.find(c=>c.type===type)?.data||new Uint8Array(),b=candidate.chunks.find(c=>c.type===type)?.data||new Uint8Array();
   if(!equal(a,b))throw Error('Palette representation changed; original retained');
