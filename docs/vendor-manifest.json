@@ -1,0 +1,32 @@
+[
+  {
+    "name": "zip.js",
+    "bytes": 220326,
+    "sha256": "a274feeb0f8644df5063af879522590457be9f13cd473b693bfc50d19ec3bd1b"
+  },
+  {
+    "name": "xml.js",
+    "bytes": 93188,
+    "sha256": "9a6e4893be2624002cac1cde1f5ad85bbe5f8523bad57256c1d4e7cae7048783"
+  },
+  {
+    "name": "oxipng.js",
+    "bytes": 6307,
+    "sha256": "ac29a688c0311c09a809e33d06c9702e84c9242169f81a04589d69a8ad6a782b"
+  },
+  {
+    "name": "squoosh_oxipng_bg.wasm",
+    "bytes": 164172,
+    "sha256": "5ea3e53c0b4fc1b4e8d1511d35b89329d9376bec75a9c4d3c054774487e5f9a3"
+  },
+  {
+    "name": "jpeg.js",
+    "bytes": 13673,
+    "sha256": "734696197f15b530eef296bd1fa4315518cd8ceb122abb948d8df795f6236733"
+  },
+  {
+    "name": "jpeg.wasm",
+    "bytes": 286524,
+    "sha256": "e390ea7f117f449701298f8a4017be4cbffe7d2073619737839d0f7b96ae4b0c"
+  }
+]
