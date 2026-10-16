@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#163653"><meta name="description" content="Compress DOCX files and individual PNG/JPEG images locally. Choose lossless or optional quality reduction, without resizing.">
+<meta name="theme-color" content="#163653"><meta name="description" content="Compress documents, maps, image collections and individual PNG/JPEG images locally. Choose lossless or optional quality reduction, without resizing.">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Doctools — Local document and image optimizer</title>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-192.png"><link rel="icon" href="icons/icon.svg"><link rel="stylesheet" href="styles.css">
@@ -10,14 +10,14 @@
 <body>
 <header><a class="brand" href="./"><img src="icons/icon.svg" width="36" height="36" alt="">Doctools</a><span class="local-mark">Files stay on your device</span></header>
 <main>
-<section class="intro"><h1>Smaller files.<br>The choice is yours.</h1><p>Compress a Word document or a single image. Keep the original quality, or choose a smaller file with a before/after preview. Image dimensions stay the same.</p></section>
+<section class="intro"><h1>Smaller files.<br>The choice is yours.</h1><p>Compress a document, map or image. Keep the original quality, or choose a smaller file with a before/after preview. Image dimensions stay the same.</p></section>
 <div class="workspace">
 <section class="sheet" aria-label="Document and image optimizer">
 <div id="dropzone" class="dropzone">
 <svg class="file-art" viewBox="0 0 72 88" aria-hidden="true"><path d="M10 3h34l18 18v62H10z"/><path d="M44 3v20h18M23 41h26M23 52h26M23 63h17"/></svg>
-<h2>Choose a document or image</h2><p>Drop one DOCX, PNG or JPEG here, or select it from your device.</p>
-<label class="choose" for="file">Choose a DOCX or image</label><input id="file" type="file" accept=".docx,.png,.jpg,.jpeg,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg" aria-describedby="limits">
-<p id="limits" class="small">One file at a time. DOCX up to 100 MiB; images up to 50 MiB and 25 megapixels.</p>
+<h2>Choose a document or image</h2><p>Drop one supported file here, or select it from your device.</p>
+<label class="choose" for="file">Choose a file</label><input id="file" type="file" accept=".docx,.png,.jpg,.jpeg,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg" aria-describedby="limits">
+<p id="limits" class="small">One file at a time. Packages up to 100 MiB; single images up to 50 MiB and 25 megapixels.</p>
 </div>
 <div id="document" class="document" hidden><div class="file-heading"><div><h2 id="filename"></h2><p id="summary"></p></div><button id="clear" class="text-button" type="button" aria-label="Clear file">Clear</button></div>
 <div class="compression-controls"><label for="mode">Compression mode</label><select id="mode" aria-describedby="mode-policy"><option value="lossless">Exact lossless</option><option value="colors">Smaller file (quality reduction)</option></select>
@@ -30,7 +30,7 @@
 <p id="status" role="status" aria-live="polite" class="status">Ready when you are.</p><p id="error" role="alert" class="error" hidden></p>
 <section id="result" class="result" aria-label="Optimization result" hidden><h2 id="result-title"></h2><p id="savings"></p><p id="sizes" class="small"></p><div id="download-slot"></div></section>
 </section>
-<aside><h2>What stays the same</h2><ul class="preserved"><li>Image dimensions and transparency</li><li>Image metadata and orientation</li><li>Document text, layout and formatting</li><li>Comments and tracked changes</li></ul><p>Your original file stays untouched. You download a separate copy.</p><p>Exact lossless keeps the original image quality. The optional smaller-file mode reduces PNG colors or JPEG quality; inspect the preview before downloading.</p><section class="supported-formats" aria-labelledby="formats-heading"><h3 id="formats-heading">Supported formats</h3><p class="small">Select a format to learn about it.</p><div id="format-list" class="format-list"></div></section><details><summary>Limits and supported files</summary><p>DOCX, PNG and JPEG. Password-protected and digitally signed documents cannot be processed. DOCX expanded limit: 250 MiB, up to 5,000 entries and 50 MiB per entry. Embedded images above 25 megapixels stay unchanged; larger standalone images are rejected. PNG color reduction supports static images up to 4 megapixels and 8-bit samples; other variants use lossless processing. Unsupported JPEG variants, including CMYK, stay unchanged.</p></details></aside>
+<aside><h2>What stays the same</h2><ul class="preserved"><li>Image dimensions and transparency</li><li>Image metadata and orientation</li><li>Document text, layout and formatting</li><li>Comments and tracked changes</li></ul><p>Your original file stays untouched. You download a separate copy.</p><p>Exact lossless keeps the original image quality. The optional smaller-file mode reduces PNG colors or JPEG quality; inspect the preview before downloading.</p><section class="supported-formats" aria-labelledby="formats-heading"><h3 id="formats-heading">Supported formats</h3><p class="small">Select a format to learn about it.</p><div id="format-list" class="format-list"></div></section><details><summary>Limits and supported files</summary><p>See the format descriptions above for supported file types. Macro-enabled, password-protected and digitally signed packages cannot be processed. Package expanded limit: 250 MiB, up to 5,000 entries and 50 MiB per entry. Embedded images above 25 megapixels stay unchanged; larger standalone images are rejected. PNG color reduction supports static images up to 4 megapixels and 8-bit samples; other variants use lossless processing. Unsupported JPEG variants, including CMYK, stay unchanged.</p></details></aside>
 </div>
 <section id="report" class="report" hidden><h2>Image report</h2><p>Each image is kept in its original format. A replacement is used only when it is smaller.</p><div class="table-wrap"><table><thead><tr><th scope="col">Image</th><th scope="col">Result</th><th scope="col">Before</th><th scope="col">After</th></tr></thead><tbody id="images"></tbody></table></div></section>
 <section id="preview" class="preview" aria-label="Before and after preview" hidden>

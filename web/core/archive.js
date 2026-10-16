@@ -37,7 +37,7 @@ export async function rewriteArchive(archive,replacements){
   const source=replacement||await archive.raw(e.name);
   await writer.add(e.name,new Uint8ArrayReader(source),replacement?{
    entry:e.metadata,level:6,
-  }:{entry:e.metadata,passThrough:true});
+  }:{entry:e.metadata,passThrough:true,uncompressedSize:e.size,compressionMethod:e.metadata.compressionMethod,crc32:e.metadata.crc32,dataDescriptor:e.metadata.bitFlag?.dataDescriptor});
  }
  return writer.close(archive.comment);
 }

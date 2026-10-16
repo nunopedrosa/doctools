@@ -1,12 +1,15 @@
+import {resultPresentation} from './result-view.js';
 import {enabledFormats} from './core/formats.js';
 import {setupFormatHelp} from './format-help.js';
 import {setupOffline} from './offline.js';
 import {createJobClient} from './job-client.js';
 import {createPreview} from './preview.js';
 const $=id=>document.getElementById(id);
-let file=null,url=null,busy=false,locked=false,lockedControls=null,resultReady=false,inspected=false,fileKind='document',fileExtension='docx';
+let file=null,url=null,busy=false,locked=false,lockedControls=null,resultReady=false,inspected=false,fileKind='document',fileExtension='docx',fileModes=['lossless','colors'],qualityControls=['colors','jpeg-quality'];
 const preview=createPreview();
-setupFormatHelp({formats:enabledFormats(),container:$('format-list'),dialog:$('format-dialog')});
+const formats=enabledFormats();
+setupFormatHelp({formats,container:$('format-list'),dialog:$('format-dialog')});
+$('file').accept=formats.map(f=>'.'+f.extension).join(',');
 const bytes=n=>n<1024?n+' B':n<1024*1024?(n/1024).toFixed(1)+' KiB':(n/1024/1024).toFixed(2)+' MiB';
 function release(){preview.clear();resultReady=false;if(url)URL.revokeObjectURL(url);url=null;$('download-slot').replaceChildren();$('result').hidden=true;$('report').hidden=true;$('images').replaceChildren();}
 function setBusy(value){busy=value;$('cancel').hidden=!value;$('clear').disabled=value||locked;$('optimize').disabled=value||locked||resultReady||!file;for(const id of ['mode','colors','jpeg-quality'])$(id).disabled=value||locked;for(const button of $('images').querySelectorAll('button'))button.disabled=value||locked;document.dispatchEvent(new CustomEvent('doctools-busy',{detail:value}));}
@@ -17,22 +20,22 @@ const jobs=createJobClient(data=>{
  if(data.type==='error'){error(data.message);return;}
  if(data.type==='inspected'){
   inspected=true;
-  fileKind=data.summary.kind;fileExtension=data.summary.extension;renderSettings();
+  fileKind=data.summary.kind;fileExtension=data.summary.extension;fileModes=data.summary.modes;qualityControls=data.summary.qualityControls;renderSettings();
   const image=data.summary.images[0];
-  $('progress').hidden=true;setBusy(false);$('summary').textContent=bytes(file.size)+' / '+(fileKind==='document'?data.summary.images.length+' embedded images':image.format+' / '+image.width+' × '+image.height+' pixels');
+  $('progress').hidden=true;setBusy(false);$('summary').textContent=bytes(file.size)+' / '+(fileKind!=='image'?data.summary.images.length+' embedded images'+(data.summary.pages?' / '+data.summary.pages+' pages':''):image.format+' / '+image.width+' × '+image.height+' pixels');
   status('File checked. Ready to optimize.');
  }else if(data.type==='progress'){
   $('progress').max=data.total;$('progress').value=data.done;status('Optimizing image '+data.done+' of '+data.total+'…');
  }else if(data.type==='result'){
   resultReady=true;
   setBusy(false);$('progress').hidden=true;$('result').hidden=false;$('optimize').disabled=true;
-  const r=data.result,saved=file.size-r.bytes.length;
-  $('result-title').textContent=r.changed?'Ready to download':'No reduction needed';
-  $('savings').textContent=r.changed?bytes(saved)+' saved ('+(saved/file.size*100).toFixed(1)+'%).':'This file could not be made smaller with the selected settings.';
+  const r=data.result,view=resultPresentation(file.name,file.size,r);
+  $('result-title').textContent=view.title;
+  $('savings').textContent=view.savings;
   $('sizes').textContent=bytes(file.size)+' original / '+bytes(r.bytes.length)+' result';
-  if(r.changed){
+  if(r.downloadAvailable){
    url=URL.createObjectURL(new Blob([r.bytes],{type:r.mime}));
-   const link=document.createElement('a');link.className='download';link.href=url;link.download=file.name.replace(/\.(docx|png|jpe?g)$/i,'').replace(/[\\/:*?"<>|\x00-\x1f]/g,'_')+'-compressed.'+r.extension;link.textContent='Download '+(r.kind==='document'?'DOCX':r.extension==='png'?'PNG':'JPEG');$('download-slot').append(link);
+   const link=document.createElement('a');link.className='download';link.href=url;link.download=view.filename;link.textContent=view.downloadLabel;$('download-slot').append(link);
   }
   const labels={optimized:'Optimized',efficient:'Already efficient',unsupported:'Kept unchanged',failed:'Kept unchanged'};
   for(const image of r.images){
@@ -51,9 +54,11 @@ $('file').addEventListener('change',e=>select(e.target.files[0]));
 $('optimize').addEventListener('click',()=>{if(busy||locked||!inspected)return;release();setBusy(true);$('progress').hidden=false;$('progress').removeAttribute('value');status('Optimizing images…');jobs.optimize({mode:$('mode').value,colors:Number($('colors').value),jpegQuality:Number($('jpeg-quality').value)});});
 $('cancel').addEventListener('click',()=>clearDocument('Cancelled. Select a file to start again.'));
 function renderSettings(){
- const smaller=$('mode').value==='colors';$('color-controls').hidden=!smaller||fileKind==='image'&&fileExtension!=='png';$('jpeg-controls').hidden=!smaller||fileKind==='image'&&fileExtension==='png';
- const target=fileKind==='document'?'PNG colors and JPEG quality':fileExtension==='png'?'PNG colors':'JPEG quality';
- $('mode-policy').textContent=smaller?'Reduces '+target+' without resizing. Colors and fine detail may change visibly. Review the before/after preview before downloading.':'Preserves original image quality, dimensions and metadata.';
+ $('mode').querySelector('option[value="colors"]').disabled=!fileModes.includes('colors');
+ if(!fileModes.includes($('mode').value))$('mode').value='lossless';
+ const smaller=$('mode').value==='colors';$('color-controls').hidden=!smaller||!qualityControls.includes('colors');$('jpeg-controls').hidden=!smaller||!qualityControls.includes('jpeg-quality');
+ const target=[qualityControls.includes('colors')?'PNG colors':null,qualityControls.includes('jpeg-quality')?'JPEG quality':null].filter(Boolean).join(' and ');
+ $('mode-policy').textContent=smaller?'Reduces '+target+' without resizing. Colors and fine detail may change visibly. Review the before/after preview before downloading.':(fileModes.includes('colors')?'Preserves original image quality, dimensions and metadata.':'OpenRaster supports exact lossless optimization only, preserving layers and the stored composite.');
  $('optimize').textContent=smaller?'Optimize for smaller file':'Optimize without quality loss';
  $('optimize').disabled=busy||locked||!inspected;$('optimize').hidden=false;
 }

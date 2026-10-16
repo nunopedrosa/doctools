@@ -10,7 +10,7 @@ for(const fallbackDialog of [false,true])await withBrowser(async({page,context,r
   await page.keyboard.press('Escape');assert.equal(await dialog.isVisible(),false);assert.ok(await button.evaluate(b=>b===document.activeElement));
  }
  assert.equal(requests.length,before,'format descriptions must make no additional requests');
- await page.getByLabel('Choose a DOCX or image').setInputFiles('tests/fixtures/mixed.docx');
+ await page.getByLabel('Choose a file').setInputFiles('tests/fixtures/mixed.docx');
  await page.waitForFunction(()=>!document.querySelector('#optimize').disabled);
  await page.locator('#optimize').click();await page.getByRole('link',{name:'Download DOCX',exact:true}).waitFor();
  const href=await page.getByRole('link',{name:'Download DOCX',exact:true}).getAttribute('href');

@@ -35,7 +35,7 @@ try{
  await context.setOffline(true);await page.close();page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base.href);await page.getByText('Ready offline',{exact:true}).waitFor();
  for(const [name,label] of [['photo.jpg','JPEG'],['textured.png','PNG'],['mixed.docx','DOCX']]){
-  await page.getByLabel('Choose a DOCX or image').setInputFiles('tests/fixtures/'+name);
+  await page.getByLabel('Choose a file').setInputFiles('tests/fixtures/'+name);
   await page.waitForFunction(()=>!document.querySelector('#optimize').disabled);
   await page.getByLabel('Compression mode').selectOption('colors');await page.locator('#optimize').click();
   await page.getByRole('link',{name:'Download '+label,exact:true}).waitFor({timeout:30000});

@@ -26,6 +26,12 @@ The JPEG/standalone review found one important metadata edge case: markers after
 
 ## Review scope decisions
 
-- Alternate main-document locations remain outside this release's approved `word/document.xml` contract. Cost: uncommon otherwise valid OOXML packages may be rejected rather than optimized.
+- Historical DOCX-only review excluded alternate main-document locations. The approved multi-format expansion supersedes that restriction and validates main parts selected by root relationships.
 - Word, older-browser, installed-app, physical-device and maximum-size memory checks remain accurately documented gaps. Cost: those environments and extreme inputs are not established by the Chromium and small-fixture results.
 - The reviewer examined wrappers, dependency configuration and provenance but did not independently reproduce the vendor compiler build. Cost: binary provenance relies on the recorded pinned build and behavioral/oracle checks, rather than a second byte-for-byte build.
+
+## Multi-format development: ZIP stage
+
+The format registry is lightweight and worker sessions own retained input/result resources. Compatibility exports keep the CLI/test-facing DOCX/image functions. The worker now uses opaque preview IDs and each request has a 120-second termination deadline. ZIP optimization verifies ordered entry sets and all protected bytes, retains compressed unchanged entries, and exposes changed lossless images for preview as well.
+
+OPC validation is shared across Office and Visio; document types, root namespaces and the main relationship are checked per extension. VBA, macro and signature declarations are rejected. KMZ validates KML, leaves map/model bytes and ZIP ordering intact, and never follows external resources. The app's local format help explains each enabled extension, supports native/fallback modal behavior, restores keyboard focus and does not reset jobs or results.

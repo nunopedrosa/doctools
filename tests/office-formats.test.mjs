@@ -6,3 +6,6 @@ for(const extension of ['docx','dotx','pptx','ppsx','potx','xlsx','xltx','vsdx']
 test('uses the declared main relationship instead of a fixed directory',async()=>{assert.ok((await inspectFile(await fixture('multiformat/relocated.pptx'),'relocated.pptx')).images.length>=2);});
 for(const name of ['hidden-vba.pptx','vba-content-type.xlsx','vba-relationship.docx','signed.vsdx','missing-image.pptx','duplicate-rel.xlsx','wrong-root.potx','wrong-main-type.dotx','encoded-traversal.xlsx'])test('rejects unsafe OPC package '+name,async()=>{await assert.rejects(()=>inspectFileFixture(name));});
 async function inspectFileFixture(name){return inspectFile(await fixture('multiformat/'+name),name);}
+for(const extension of ['pptx','xlsx'])test('preserves realistic editor-compatible '+extension,async()=>{
+ const src=await fixture('multiformat/realistic.'+extension),r=await optimizeFile(src,'realistic.'+extension);await assertProtectedZip(src,r.bytes,r.images);await saveOutput('realistic.'+extension,r.bytes);assert.ok(r.images.length>0);
+});

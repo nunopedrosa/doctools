@@ -15,7 +15,7 @@ export async function validateOpc(archive){
   const type=el.getAttribute('ContentType');if(!type||forbidden.test(type))throw Error('Unsupported or signed/macro content type');
   if(el.localName==='Override'){
    const raw=el.getAttribute('PartName');if(!raw.startsWith('/'))throw Error('Invalid content type part URI');
-   const path=resolvePackageTarget('',raw);if(overrides.has(path)||!names.has(path))throw Error('Duplicate or missing content type part');overrides.set(path,type);
+   const path=resolvePackageTarget('',raw);if(overrides.has(path))throw Error('Duplicate content type part');overrides.set(path,type);
   }else if(el.localName==='Default'){
    const ext=el.getAttribute('Extension').toLowerCase();if(!ext||ext.includes('/')||defaults.has(ext))throw Error('Invalid or duplicate content type');defaults.set(ext,type);
   }else throw Error('Invalid content type element');

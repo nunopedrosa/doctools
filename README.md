@@ -1,6 +1,6 @@
 # Doctools
 
-Compress DOCX files or individual PNG/JPEG images without resizing. Choose exact lossless optimization or optional PNG color/JPEG quality reduction with a before/after preview. Processing runs on your device. The PWA downloads a separate optimized file and keeps the original untouched.
+Compress Word documents/templates (DOCX/DOTX), PowerPoint presentations/slideshows/templates (PPTX/PPSX/POTX), Excel workbooks/templates (XLSX/XLTX), Visio drawings (VSDX), Google Earth maps (KMZ), or individual PNG/JPEG images without resizing. Choose exact lossless optimization or optional PNG color/JPEG quality reduction with a before/after preview. Processing runs on your device. The PWA downloads a separate optimized file and keeps the original untouched.
 
 ## Run locally
 
@@ -12,9 +12,9 @@ python3 -m http.server 8000 --bind 127.0.0.1 --directory web
 
 Open [Doctools locally](http://127.0.0.1:8000/). Use the same port for later visits so the browser uses the same site storage. Directly opening `index.html` with `file://` does not support the offline workflow.
 
-1. Select or drop one DOCX, PNG or JPEG and wait for its summary.
-2. Keep **Exact lossless** for the original quality, or choose **Smaller file (quality reduction)**. For PNGs, select a palette size (128 by default). For JPEGs, select an encoder quality (70 by default; higher values keep more detail). DOCX files show both controls for embedded images.
-3. Optimize, review the image report, and choose **Preview** for quality-reduced images or a changed standalone image. Compare at fit size or **100% — actual pixels**, with synchronized scrolling. Download `name-compressed.docx`, `.png`, `.jpg` or `.jpeg` if the result is smaller. Changing mode or settings clears the old result; optimize again to apply the change.
+1. Select or drop one supported file and wait for its summary. Each extension in the supported-format list opens an offline description with example applications.
+2. Keep **Exact lossless** for the original quality, or choose **Smaller file (quality reduction)**. For PNGs, select a palette size (128 by default). For JPEGs, select an encoder quality (70 by default; higher values keep more detail). Packages show controls for their embedded PNG/JPEG images.
+3. Optimize, review the image report, and choose **Preview** for changed images. Compare at fit size or **100% — actual pixels**, with synchronized scrolling. Download a separate `name-compressed` file in its original format if the complete result is smaller. Changing mode or settings clears the old result; optimize again to apply the change.
 4. Choose **Clear** to release the current file and result. **Cancel** stops processing; select a file to start again.
 
 If the complete package does not shrink, the app retains the original bytes and reports no reduction. It does not offer an unchanged file as a compressed download.
@@ -27,11 +27,13 @@ Install from Chrome/Edge's app installation menu, or Safari's **File → Add to 
 
 Updates wait until you choose **Update app**. Finish or cancel processing in all open Doctools windows first. The app checks and locks idle windows, then reloads them together. A failed download of an update leaves the active release available. Offline readiness is checked separately from connection status.
 
+This development branch adds the package formats and help dialogs listed above. The live site still serves the previously verified DOCX/PNG/JPEG release until a separate deployment.
+
 The production target is [smaller.basecentral.link](https://smaller.basecentral.link/), using the same DreamHost account as Agenda. The production release is deployed with trusted HTTPS; live Chromium checks verify offline DOCX, PNG and JPEG processing and image previews. See [deployment and rollback instructions](docs/DEPLOYMENT.md) for the exact paths, DNS, cache headers and verification command. Keep the whole release together, including vendor binaries and licenses; keep repository documentation, tests and `.git` outside the web root.
 
 ## Preservation and limits
 
-For DOCX, only existing PNG and JPEG images under `word/media/` are candidates for optimization. Individual PNG/JPEG files use the same image engine. Both modes preserve image formats, dimensions, metadata, orientation and transparency; paths inside DOCX also stay unchanged. In exact lossless mode, JPEG processing preserves quantized coefficients and PNG processing compares every decoded pixel, including transparency and 16-bit samples. Lossless changes such as removing an unused alpha channel or using an exact palette are allowed. Unsupported variants, animated PNGs and other embedded formats stay unchanged, with a reason in the report.
+Office/Visio image parts are discovered through content types and relationships, including package thumbnails. KMZ bundled PNG/JPEG images are eligible while KML and other resources remain unchanged. Individual PNG/JPEG files use the same image engine. Both modes preserve image formats, dimensions, metadata, orientation and transparency; paths inside packages also stay unchanged. In exact lossless mode, JPEG processing preserves quantized coefficients and PNG processing compares every decoded pixel, including transparency and 16-bit samples. Lossless changes such as removing an unused alpha channel or using an exact palette are allowed. Unsupported variants, animated PNGs and other embedded formats stay unchanged, with a reason in the report.
 
 Optional PNG color reduction uses a palette of up to 32, 64, 128 or 256 colors. RGB values can change visibly, particularly in gradients, photographs and fine text. Each alpha sample is verified unchanged. It supports static PNGs with up to 8-bit samples and 4 megapixels; larger images, 16-bit PNGs, representation-dependent metadata and candidates that alter transparency fall back to lossless processing.
 
@@ -45,14 +47,14 @@ Strict lossless optimization can save little on already optimized documents. Sav
 
 On the supplied 2,036,321-byte JPEG, quality 70 produces 808,996 bytes (60.3% smaller), close to LightImage's 790,030 bytes (61.2% smaller). Both retain 2160 × 3840 dimensions. The app retains the original APP/COM metadata byte-for-byte. Exact lossless optimization of that image saves 9.8%.
 
-- Input: up to 100 MiB; one DOCX at a time.
+- Package input: up to 100 MiB; one file at a time.
 - Standalone PNG/JPEG: up to 50 MiB and 25 megapixels; one image at a time.
 - Expanded package: up to 250 MiB and 5,000 entries.
 - Each expanded entry: up to 50 MiB.
 - Images above 25 megapixels: retained unchanged.
 - Password-protected, encrypted, signed, malformed or unsupported packages: rejected with an explanation.
 
-Large documents need more memory than their file size. Limits are protective ceilings, not a guarantee that every device can process a maximum-size file. Cancellation keeps the original intact.
+Large documents need more memory than their file size. Limits are protective ceilings, not a guarantee that every device can process a maximum-size file. Cancellation or the 120-second operation timeout terminates processing and keeps the original intact.
 
 Target desktop browsers: Safari 17+, Chrome/Edge 120+, Firefox 121+. See [actual verification](docs/VERIFICATION.md) for tested versions and gaps. Small-screen layout is supported; large-document mobile processing is not verified.
 
