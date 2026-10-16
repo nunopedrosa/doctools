@@ -84,7 +84,9 @@ try{
  await page.getByLabel('Compression mode').selectOption('lossless');
  assert.equal(await page.getByRole('link',{name:'Download DOCX'}).count(),0,'changing mode invalidates old result');
  await page.locator('#optimize').click();await page.getByRole('link',{name:'Download DOCX'}).waitFor();
- assert.equal(await page.getByRole('button',{name:'Preview texture.png',exact:true}).count(),0,'lossless does not use perceptual path');
+ await page.getByRole('button',{name:'Preview texture.png',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelector('#preview-after').naturalWidth===320);
+ assert.match(await page.locator('#preview-message').textContent(),/exact lossless/,'lossless preview must not claim quality reduction');
  await page.getByRole('button',{name:'Clear file'}).click();
  await page.getByLabel('Choose a DOCX or image').setInputFiles('tests/fixtures/signed.docx');
  await page.getByRole('alert').filter({hasText:/sign/i}).waitFor();

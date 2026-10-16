@@ -36,7 +36,7 @@ const jobs=createJobClient(data=>{
    const row=document.createElement('tr');
    for(const text of [image.path.replace('word/media/',''),labels[image.status],bytes(image.before),bytes(image.after)]){const cell=document.createElement('td');cell.textContent=text;row.append(cell);}
    const reason=document.createElement('small');reason.textContent=image.reason;row.children[1].append(reason);$('images').append(row);
-   if(image.perceptual||image.previewable){const button=document.createElement('button');button.type='button';button.textContent='Preview';button.setAttribute('aria-label','Preview '+image.path.replace('word/media/',''));button.addEventListener('click',()=>{if(busy||locked)return;preview.loading(image.path);setBusy(true);status('Loading image preview…');jobs.preview(image.path);});row.children[1].append(button);}
+   if(image.perceptual||image.previewable){const button=document.createElement('button');button.type='button';button.textContent='Preview';button.setAttribute('aria-label','Preview '+image.path.replace('word/media/',''));button.addEventListener('click',()=>{if(busy||locked)return;preview.loading(image.path);setBusy(true);status('Loading image preview…');jobs.preview(image.previewId);});row.children[1].append(button);}
   }
   $('report').hidden=!r.images.length;status('Finished. Your original file is unchanged.');
  }
