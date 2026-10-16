@@ -43,5 +43,15 @@
     "name": "jpeg.wasm",
     "bytes": 542365,
     "sha256": "d3a861a4f8e6fced36a47ee13a27d0058ebfc4915a0f028cc7c00465449d330d"
+  },
+  {
+    "name": "archive.js",
+    "bytes": 16616,
+    "sha256": "bc24bbdfec572ede6436cd9222b9b992e0d43299956cd7b04f3e3437636a701c"
+  },
+  {
+    "name": "archive.wasm",
+    "bytes": 389751,
+    "sha256": "f822520d1f71c9f11cda0283afd45a91ef35381c9b51f3aa1a9fe5a12f7559b9"
   }
 ]

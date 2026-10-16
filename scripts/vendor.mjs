@@ -20,6 +20,6 @@ for(const [pkg,name] of [['@jsquash/oxipng','oxipng'],['@jsquash/png','png'],['@
  for(const filename of ['LICENSE','LICENSE.md','LICENSE.txt']){try{await copyFile('node_modules/'+pkg+'/'+filename,'web/vendor/licenses/'+name+'.txt');break;}catch{}}
 }
 await copyFile('node_modules/@jsquash/png/codec/LICENSE.codec.md','web/vendor/licenses/png-codec.txt');
-const files=['upng.js','png-decode.js','squoosh_png_bg.wasm','zip.js','xml.js','oxipng.js','squoosh_oxipng_bg.wasm','jpeg.js','jpeg.wasm'];
+const files=['upng.js','png-decode.js','squoosh_png_bg.wasm','zip.js','xml.js','oxipng.js','squoosh_oxipng_bg.wasm','jpeg.js','jpeg.wasm','archive.js','archive.wasm'];
 const rows=[];for(const name of files){try{const b=await readFile('web/vendor/'+name);rows.push({name,bytes:b.length,sha256:createHash('sha256').update(b).digest('hex')});}catch{}}
 await writeFile('docs/vendor-manifest.json',JSON.stringify(rows,null,2)+'\n');
