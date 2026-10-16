@@ -4,6 +4,7 @@ configure({useWebWorkers:false});
 export async function readArchive(bytes,custom={}){
  const limits={...LIMITS,...custom};checkLimit(bytes.length,limits.input,'Input file');
  if(bytes[0]===0xd0&&bytes[1]===0xcf)throw Error('Encrypted or legacy Office container: save an unencrypted DOCX first');
+ if(bytes[0]!==0x50||bytes[1]!==0x4b||!((bytes[2]===3&&bytes[3]===4)||(bytes[2]===5&&bytes[3]===6)))throw Error('Unsupported ZIP signature or self-extracting archive');
  const reader=new ZipReader(new Uint8ArrayReader(bytes),{strictness:'strict',checkCrc32:true,checkOverlappingEntry:true});
  const entries=[],byName=new Map();let declared=0,actual=0;const measured=new Set();
  try{
@@ -37,7 +38,7 @@ export async function rewriteArchive(archive,replacements){
   const source=replacement||await archive.raw(e.name);
   await writer.add(e.name,new Uint8ArrayReader(source),replacement?{
    entry:e.metadata,level:6,
-  }:{entry:e.metadata,passThrough:true,uncompressedSize:e.size,compressionMethod:e.metadata.compressionMethod,crc32:e.metadata.crc32,dataDescriptor:e.metadata.bitFlag?.dataDescriptor});
+  }:{entry:e.metadata,...(e.name==='mimetype'?{extendedTimestamp:false,ntfsTimestamp:false,extraField:new Map(),dataDescriptor:false}:{}),passThrough:true,uncompressedSize:e.size,compressionMethod:e.metadata.compressionMethod,crc32:e.metadata.crc32,dataDescriptor:e.metadata.bitFlag?.dataDescriptor});
  }
  return writer.close(archive.comment);
 }

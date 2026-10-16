@@ -40,4 +40,4 @@ export async function validateOpc(archive){
  }
  return {types,relationships};
 }
-export async function recognizeZipPackage(archive){const names=new Set(archive.entries.map(e=>e.name));if(names.has('[Content_Types].xml')||names.has('_rels/.rels'))return 'office';if([...names].some(n=>/\.kml$/i.test(n)))return 'kmz';return null;}
+export {recognizeZipPackage} from './zip-package-kind.js';

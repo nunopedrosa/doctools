@@ -32,6 +32,7 @@ const jobs=createJobClient(data=>{
   const r=data.result,view=resultPresentation(file.name,file.size,r);
   $('result-title').textContent=view.title;
   $('savings').textContent=view.savings;
+  $('result-warnings').textContent=(r.warnings||[]).join(' ');$('result-warnings').hidden=!r.warnings?.length;
   $('sizes').textContent=bytes(file.size)+' original / '+bytes(r.bytes.length)+' result';
   if(r.downloadAvailable){
    url=URL.createObjectURL(new Blob([r.bytes],{type:r.mime}));

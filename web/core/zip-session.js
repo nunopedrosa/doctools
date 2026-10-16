@@ -12,7 +12,7 @@ export async function openZipSession(input,format,validator){
   async optimize(options={},onProgress=()=>{}){
    active();if(!modes.includes(options.mode||'lossless'))throw Error('This format supports exact lossless optimization only.');
    if(b){await b.close();b=null;}output=null;rows=[];const replacements=new Map();let done=0;
-   for(const path of paths){const src=await a.read(path),r=await optimizeImage(src,path,{},options);rows.push({path,status:r.status,reason:r.reason,perceptual:!!r.perceptual,before:src.length,after:r.bytes.length});if(r.status==='optimized')replacements.set(path,r.bytes);onProgress({done:++done,total:paths.length,path});}
+   for(const path of paths){const src=await a.read(path),r=await optimizeImage(src,path,{},options);const constraint=validation.imageConstraints?.get(path);if(r.status==='optimized'&&constraint&&!(await import('./ora.js')).oraRepresentationAllowed(r.bytes,constraint)){r.bytes=src;r.status='efficient';r.reason='Original retained: OpenRaster requires this PNG sample representation';}rows.push({path,status:r.status,reason:r.reason,perceptual:!!r.perceptual,before:src.length,after:r.bytes.length});if(r.status==='optimized')replacements.set(path,r.bytes);onProgress({done:++done,total:paths.length,path});}
    if(replacements.size){
     const candidate=await rewriteArchive(a,replacements);b=await readArchive(candidate);
     try{

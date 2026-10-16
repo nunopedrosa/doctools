@@ -40,3 +40,7 @@ with tarfile.open(out/'linked.tar','w') as t:
 
 (out/'rar4-volume.cbr').write_bytes(rar4(pages,1))
 (out/'rar5-volume.cbr').write_bytes(rar5(pages,1))
+(out/'small.cbr').write_bytes(rar4([('a',b'')]))
+(out/'pages.cbr').write_bytes((out/'rar4.cbr').read_bytes())
+(out/'pages.cbt').write_bytes((out/'pages.tar').read_bytes())
+if (out/'pages.7z').exists():(out/'pages.cb7').write_bytes((out/'pages.7z').read_bytes())

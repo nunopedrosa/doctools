@@ -9,7 +9,7 @@ const rows=[
  ['xltx','Excel template','office','document','application/vnd.openxmlformats-officedocument.spreadsheetml.template'],
  ['vsdx','Visio drawing','office','document','application/vnd.ms-visio.drawing'],
  ['kmz','Google Earth map','kmz','document','application/vnd.google-earth.kmz'],
- ...['cbz','cbr','cb7','cbt'].map(e=>[e,'Comic archive','comic','comic',e==='cbr'?'application/vnd.comicbook-rar':'application/vnd.comicbook+zip']),
+ ...['cbz','cbr','cb7','cbt'].map(e=>[e,'Comic archive','comic','comic',({cbr:'application/vnd.comicbook-rar',cbz:'application/vnd.comicbook+zip',cb7:'application/x-7z-compressed',cbt:'application/x-tar'})[e]]),
  ...['zip','tar','7z'].map(e=>[e,'Image collection','collection','archive',{'zip':'application/zip','tar':'application/x-tar','7z':'application/x-7z-compressed'}[e]]),
  ...Object.entries({odt:'text',ods:'spreadsheet',odp:'presentation',odg:'graphics',ott:'text-template',ots:'spreadsheet-template',otp:'presentation-template',otg:'graphics-template'}).map(([e,t])=>[e,'OpenDocument '+t,'odf','document','application/vnd.oasis.opendocument.'+t]),
  ['ora','OpenRaster artwork','ora','document','image/openraster'],
@@ -17,7 +17,7 @@ const rows=[
  ['pdf','PDF document','pdf','document','application/pdf'],
  ['png','PNG image','image','image','image/png'],['jpg','JPEG image','image','image','image/jpeg'],['jpeg','JPEG image','image','image','image/jpeg']
 ];
-const enabled=new Set(['docx','dotx','pptx','ppsx','potx','xlsx','xltx','vsdx','kmz','png','jpg','jpeg']);
+const enabled=new Set(['ora','odt','ods','odp','odg','ott','ots','otp','otg','epub','docx','dotx','pptx','ppsx','potx','xlsx','xltx','vsdx','kmz','cbz','cbr','cb7','cbt','zip','tar','7z','png','jpg','jpeg']);
 export const FORMATS=Object.freeze(rows.map(([extension,label,family,kind,mime])=>Object.freeze({id:extension,extension,label,family,kind,mime,outputExtension:family==='comic'?'cbz':extension,outputMime:family==='comic'?'application/vnd.comicbook+zip':mime,outputLabel:family==='comic'?'CBZ':['jpg','jpeg'].includes(extension)?'JPEG':extension.toUpperCase(),modes:Object.freeze(extension==='ora'?['lossless']:['lossless','colors']),enabled:enabled.has(extension)})));
 export function enabledFormats(){return FORMATS.filter(f=>f.enabled);}
 export function formatForName(name){const ext=String(name).split('.').pop().toLowerCase(),f=FORMATS.find(f=>f.extension===ext&&f.enabled);if(!f)throw Error('Choose a supported document, archive or image file.');return f;}
