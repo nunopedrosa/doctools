@@ -1,6 +1,6 @@
 # Doctools verification
 
-Verification date: 2026-10-16. The complete 30-format development release passed local checks; hosted evidence below refers to the earlier DOCX/PNG/JPEG release. See [the deployment record](DEPLOYMENT.md).
+Verification date: 2026-10-16. The complete 30-format release passed local and hosted checks. The latest deployment record below supersedes the earlier DOCX/PNG/JPEG hosted evidence. See [the deployment record](DEPLOYMENT.md).
 
 ## Hosted verification
 
@@ -104,3 +104,7 @@ Additional application checks completed: Krita successfully opened/exported orig
 Independent whole-branch review: 79 focused tests passed and all three concrete findings were repaired with regressions. No unresolved correctness finding remained. Detailed commands, source/dependency rulings and final test totals are recorded in the execution ledger/final implementation notes. No deployment or remote Git push was performed.
 
 Final commands: `npm test` — **171/171**; `npm run test:browser`, `npm run test:formats`, `npm run test:pdf`, `npm run test:archive-engine` — all passed on the final runtime. Independent oracles: 12 lossless images, 11 Office/KMZ packages, 8 comic/archive outputs, 14 publication/artwork outputs, 7 PDF outputs. `git diff --check` passed. Final runtime release `2026.10.16.1-9bf4afa41b2b` contains 278 offline assets. Krita version was 5.2.9. EPUBCheck 5.4.0 distribution SHA-256 was `33350c61038e71dfb3d45a76aed04bf5481e6d5500cb780f6e98db8bbd15a28c`, acquired from its official W3C GitHub release; it is a development check, not a runtime dependency.
+
+## Latest hosted verification — 30-format release
+
+User-authorized deployment of `2026.10.16.1-9bf4afa41b2b` completed on 2026-10-16. Fresh `npm test` passed 171/171 before staging. The updated `node tests/live.mjs https://smaller.basecentral.link/` passed against the live site: 278 asset hashes/MIME/cache headers, protected private paths, trusted HTTPS, offline reopen, all 30 explicit extensions, format pop-ups, image and PDF-page previews, no action/script execution, runtime-only caches, zero uploads or external app requests. First offline installation measured 73 seconds over the public connection. HTTP 301 and direct-origin trusted TLS/WASM headers also passed. The prior release remains intact for rollback; see DEPLOYMENT.md. Minimum-browser/installed-PWA/device gaps listed above remain unchanged.

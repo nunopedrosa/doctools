@@ -121,6 +121,23 @@ The complete hosted smoke test passed after cache-policy propagation: all 42 ass
 
 No changes were made to Agenda's application, database, DNS or cache rule. The shared zone SSL mode was inspected without modification. Runtime binary revalidation was not bypassed to make these checks pass.
 
-## Multi-format development status
+## Multi-format release — 2026-10-16
 
-The 30-extension expansion is a separate local development release on `codex/multiformat`. It has not been deployed; the production release recorded above remains unchanged. Deployment requires the complete new `web/` inventory (including QPDF, archive and PDF.js binaries/resources/licenses), regenerated hashes and a new verified release. Do not copy only HTML/JS from this expansion onto the older release.
+The user authorized deployment of the 30-extension expansion on `codex/multiformat`. It supersedes the earlier DOCX/image production release. Deployment requires the complete new `web/` inventory (including QPDF, archive and PDF.js binaries/resources/licenses), regenerated hashes and a new verified release. Do not copy only HTML/JS from this expansion onto the older release.
+
+- Runtime release: `2026.10.16.1-9bf4afa41b2b`; application source commit `2a90d9a`.
+- Active target: `/home/basecentral/smaller-app/releases/2026.10.16.1-9bf4afa41b2b`.
+- Previous intact rollback target: `releases/2026.10.16.1-021043170764-apache2`.
+- Archive SHA-256: `c143a050635b9fdc414cedf3a67b14dad4cdea8bea5330cae79759c82ee3235b`.
+- Private upload/activation records: `/home/basecentral/smaller-app/incoming/2026.10.16.1-9bf4afa41b2b/`, including the archive, source metadata and activation.json.
+- The archive contains only 278 inventory-listed runtime assets, `.htaccess`, and the private `SHA256SUMS` record outside `web/`. Every member was checked before extraction; extraction accepted only regular allowlisted files. All 279 public files were hashed again before activation. File/directory permissions are `0644`/`0755`; the private checksum record is `0600`.
+- Activation checked the previous `current` target, created a fresh temporary symlink and atomically replaced only `current`. Old releases and the public link were retained. No Agenda, DNS, certificate, Cloudflare rule or other application changes were made.
+- HTTP redirects to HTTPS. Direct-origin trusted TLS and PDF WASM `application/wasm` / `no-cache` headers pass. Public verification checks all 278 assets against local SHA-256 and requires correct MIME/revalidation headers, plus inaccessible private repository paths.
+
+The expanded offline set includes PDF fonts/CMaps/decoder resources. The hosted smoke test allows up to 180 seconds for first-install caching (the older 45-second test window was too short over the public connection); per-file processing deadlines remain 120 seconds. Asset verification uses bounded batches of eight requests, and each public fetch has a 30-second timeout. No personal files are used as deployment probes.
+
+A fresh hosted browser completed offline installation in **73 seconds** over the verification connection. This is a measured first-install time for the full asset set, not a processing-time guarantee. Subsequent disconnected visits use the completed cache. One expanded test attempt exposed a Playwright fixture payload type error; the harness now passes actual Node Buffers under each explicit extension. This affected the verification harness, not the published runtime.
+
+**Final hosted smoke test passed:** Chromium 153.0.8010.12 validated all 278 public runtime asset hashes/MIME/cache headers and private-path protections, reached Ready offline, closed/reopened disconnected, then processed every one of the 30 enabled extensions offline. Image previews, clickable format descriptions and PDF original/result page rendering worked. Cached URLs were limited to the runtime inventory; selected files/results were not cached. Recorded app traffic contained only same-origin GETs/local Blob URLs, with zero uploads and no external destinations. PDF action/script sentinel remained unexecuted. Screenshots/downloads are retained under ignored `tests/output/live/` in the execution checkout. The updated `tests/live.mjs` retains this full-format coverage for future deployments.
+
+Current release rollback command (retain all release directories): create a fresh temporary symlink under `/home/basecentral/smaller-app` to `releases/2026.10.16.1-021043170764-apache2`, then atomically replace `current` as described above and verify HTTPS/assets again. Existing open tabs can choose **Update app** once idle to load the new release.

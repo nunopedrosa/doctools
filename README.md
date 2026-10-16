@@ -27,9 +27,9 @@ Install from Chrome/Edge's app installation menu, or Safari's **File → Add to 
 
 Updates wait until you choose **Update app**. Finish or cancel processing in all open Doctools windows first. The app checks and locks idle windows, then reloads them together. A failed download of an update leaves the active release available. Offline readiness is checked separately from connection status.
 
-This development branch adds the package formats and help dialogs listed above. The live site still serves the previously verified DOCX/PNG/JPEG release until a separate deployment.
+The 30-format release is deployed at smaller.basecentral.link; its hosted verification and rollback record are in docs/DEPLOYMENT.md.
 
-The production target is [smaller.basecentral.link](https://smaller.basecentral.link/), using the same DreamHost account as Agenda. The production release is deployed with trusted HTTPS; live Chromium checks verify offline DOCX, PNG and JPEG processing and image previews. See [deployment and rollback instructions](docs/DEPLOYMENT.md) for the exact paths, DNS, cache headers and verification command. Keep the whole release together, including vendor binaries and licenses; keep repository documentation, tests and `.git` outside the web root.
+The production target is [smaller.basecentral.link](https://smaller.basecentral.link/), using the same DreamHost account as Agenda. The production release is deployed with trusted HTTPS; hosted Chromium checks cover the published release; see the deployment record for exact format and offline verification. See [deployment and rollback instructions](docs/DEPLOYMENT.md) for the exact paths, DNS, cache headers and verification command. Keep the whole release together, including vendor binaries and licenses; keep repository documentation, tests and `.git` outside the web root.
 
 ## Preservation and limits
 
@@ -96,4 +96,4 @@ This creates `example_docx/`. Optimize images in `example_docx/word/media/` with
 
 This creates `example-compressed.docx`, copying the original archive and updating image entries. It refuses to overwrite an existing output. The original DOCX stays untouched. The PWA adds stricter validation and output-preservation checks; the CLI retains its existing behavior.
 
-The full supported extension list is: Office DOCX/DOTX/PPTX/PPSX/POTX/XLSX/XLTX, Visio VSDX, KMZ, OpenDocument ODT/ODS/ODP/ODG/OTT/OTS/OTP/OTG, DRM-free EPUB, PDF, OpenRaster ORA, comics CBZ/CBR/CB7/CBT, ZIP/TAR/7z image collections and standalone PNG/JPEG. CBR/CB7/CBT downloads convert to CBZ even when conversion is larger; ZIP/TAR/7z keep their container. ORA is lossless-only. Macro-enabled, encrypted and signed documents are rejected. Unsupported images and opaque resources are preserved. Click any displayed format for a local description and application examples. This expansion has not been deployed.
+The full supported extension list is: Office DOCX/DOTX/PPTX/PPSX/POTX/XLSX/XLTX, Visio VSDX, KMZ, OpenDocument ODT/ODS/ODP/ODG/OTT/OTS/OTP/OTG, DRM-free EPUB, PDF, OpenRaster ORA, comics CBZ/CBR/CB7/CBT, ZIP/TAR/7z image collections and standalone PNG/JPEG. CBR/CB7/CBT downloads convert to CBZ even when conversion is larger; ZIP/TAR/7z keep their container. ORA is lossless-only. Macro-enabled, encrypted and signed documents are rejected. Unsupported images and opaque resources are preserved. Click any displayed format for a local description and application examples. This expansion was deployed on 2026-10-16.
