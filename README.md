@@ -1,46 +1,99 @@
-# DOCX Image Tools v2
+# Doctools
 
-This version keeps the original DOCX package intact and updates only the image files under `word/media/`.
+Optimize Office documents and templates, Visio, OpenDocument, EPUB, PDF, OpenRaster artwork, KMZ maps, comic archives, ZIP/TAR/7z image collections and individual PNG/JPEG images locally, without resizing. Exact lossless optimization is the default; optional PNG color/JPEG quality reduction includes before/after previews. OpenRaster is lossless-only. Originals stay untouched.
 
-That is safer than reconstructing the whole DOCX ZIP from scratch.
+## Run locally
 
-## 1. Unpack
+The finished app and all dependencies are checked in. No installation, build, account, or application server is required:
 
-```bash
-./docx-unpack GreenMarine_D5.4_v1.0_old.docx
+```sh
+python3 -m http.server 8000 --bind 127.0.0.1 --directory web
 ```
 
-This creates:
+Open [Doctools locally](http://127.0.0.1:8000/). Use the same port for later visits so the browser uses the same site storage. Directly opening `index.html` with `file://` does not support the offline workflow.
 
-```text
-GreenMarine_D5.4_v1.0_old_docx/
+1. Select or drop one supported file and wait for its summary. Each extension in the supported-format list opens an offline description with example applications.
+2. Keep **Exact lossless** for the original quality, or choose **Smaller file (quality reduction)**. For PNGs, select a palette size (128 by default). For JPEGs, select an encoder quality (70 by default; higher values keep more detail). Packages show controls for their embedded PNG/JPEG images.
+3. Optimize, review the image report, and choose **Preview** for changed images. Compare at fit size or **100% — actual pixels**, with synchronized scrolling. Download a separate `name-compressed` file in its original format if the complete result is smaller. CBR/CB7/CBT convert to CBZ with a `-converted` filename, including when conversion makes the archive larger. PDFs also offer a bounded page comparison. Changing mode or settings clears the old result; optimize again to apply the change.
+4. Choose **Clear** to release the current file and result. **Cancel** stops processing; select a file to start again.
+
+If the complete package does not shrink, the app retains the original bytes and reports no reduction. It does not offer an unchanged file as a compressed download. Comic format conversion remains downloadable with its size increase shown explicitly.
+
+## Offline use and installation
+
+Keep the page open until **Ready offline** appears. This confirms that the app controls the page and has cached its interface, workers, image codecs and all advertised format engines. You can then reopen the same address and process new documents or standalone images offline. Browser cache eviction or clearing site data removes offline availability; reconnect to the local server and reload to repair missing assets.
+
+Install from Chrome/Edge's app installation menu, or Safari's **File → Add to Dock** on Mac. Installation is optional; browser use has the same processing features. Firefox can use the offline browser app, with installation options depending on platform.
+
+Updates wait until you choose **Update app**. Finish or cancel processing in all open Doctools windows first. The app checks and locks idle windows, then reloads them together. A failed download of an update leaves the active release available. Offline readiness is checked separately from connection status.
+
+The 30-format release is deployed at smaller.basecentral.link; its hosted verification and rollback record are in docs/DEPLOYMENT.md.
+
+The production target is [smaller.basecentral.link](https://smaller.basecentral.link/), using the same DreamHost account as Agenda. The production release is deployed with trusted HTTPS; hosted Chromium checks cover the published release; see the deployment record for exact format and offline verification. See [deployment and rollback instructions](docs/DEPLOYMENT.md) for the exact paths, DNS, cache headers and verification command. Keep the whole release together, including vendor binaries and licenses; keep repository documentation, tests and `.git` outside the web root.
+
+## Preservation and limits
+
+Office/Visio image parts are discovered through content types and relationships, including package thumbnails. KMZ bundled PNG/JPEG images are eligible while KML and other resources remain unchanged. Individual PNG/JPEG files use the same image engine. Both modes preserve image formats, dimensions, metadata, orientation and transparency; paths inside packages also stay unchanged. In exact lossless mode, JPEG processing preserves quantized coefficients and PNG processing compares every decoded pixel, including transparency and 16-bit samples. Lossless changes such as removing an unused alpha channel or using an exact palette are allowed. Unsupported variants, animated PNGs and other embedded formats stay unchanged, with a reason in the report.
+
+Optional PNG color reduction uses a palette of up to 32, 64, 128 or 256 colors. RGB values can change visibly, particularly in gradients, photographs and fine text. Each alpha sample is verified unchanged. It supports static PNGs with up to 8-bit samples and 4 megapixels; larger images, 16-bit PNGs, representation-dependent metadata and candidates that alter transparency fall back to lossless processing.
+
+Optional JPEG quality reduction decodes and re-encodes supported 8-bit grayscale/YCbCr JPEGs at the selected quality. It keeps the original dimensions, sampling, orientation and APP/COM metadata. Quality 70 is an encoder parameter, not a guarantee of 70% visual quality. Unsupported color spaces, including CMYK and RGB-coded JPEGs, use the existing lossless/unchanged fallback. JPEGs can lose fine detail; preview text and textures before downloading.
+
+Both optional methods change pixel values. Previews help you judge quality but cannot guarantee invisible differences. The smallest of the original, lossless and accepted quality-reduced candidates is used. Previews load one pair at a time and release their object URLs on close, settings changes, clearing or navigation.
+
+All other package parts, including XML, relationships, comments, tracked changes, headers/footers and embedded objects, retain identical extracted bytes. ZIP container bytes and offsets can change. Output is reopened and checked before a download is offered.
+
+Strict lossless optimization can save little on already optimized documents. Savings depend on the images and ZIP compression. On the supplied 499,645-byte PNG, exact lossless saves 32.0%; color reduction saves 85.4% at 128 colors or 88.7% at 64 colors, at the original 597 × 1067 dimensions. LightImage's supplied result saves 88.2%, with a different 30-color palette. These are one-image measurements, not a guarantee for other images or whole documents. No resizing, metadata stripping or format conversion is performed.
+
+On the supplied 2,036,321-byte JPEG, quality 70 produces 808,996 bytes (60.3% smaller), close to LightImage's 790,030 bytes (61.2% smaller). Both retain 2160 × 3840 dimensions. The app retains the original APP/COM metadata byte-for-byte. Exact lossless optimization of that image saves 9.8%.
+
+- Package input: up to 100 MiB; one file at a time.
+- Standalone PNG/JPEG: up to 50 MiB and 25 megapixels; one image at a time.
+- Expanded package: up to 250 MiB and 5,000 entries.
+- Each expanded entry: up to 50 MiB.
+- Images above 25 megapixels: retained unchanged.
+- Password-protected, encrypted, signed, malformed or unsupported packages: rejected with an explanation.
+
+Large documents need more memory than their file size. Limits are protective ceilings, not a guarantee that every device can process a maximum-size file. Cancellation or the 120-second operation timeout terminates processing and keeps the original intact.
+
+Target desktop browsers: Safari 17+, Chrome/Edge 120+, Firefox 121+. See [actual verification](docs/VERIFICATION.md) for tested versions and gaps. Small-screen layout is supported; large-document mobile processing is not verified.
+
+## Privacy
+
+No file uploads, tracking, analytics, accounts or cloud services. Documents, standalone images and results stay in memory; only application assets are cached. There is no saved file history. Browser storage belongs to the particular browser, device and origin, and can be cleared. Keep your original files as your canonical copies.
+
+## Development and checks
+
+Node.js 22+ and Python 3 are used for maintenance and testing only. Dependency versions, licenses, hashes and codec rebuild steps are in [dependencies](docs/DEPENDENCIES.md). Tests require Pillow, python-docx, native `jpegtran`, Playwright and Chromium. Existing bundled workspace tools can be selected with `DOCTOOLS_PYTHON`, `DOCTOOLS_PLAYWRIGHT` and `DOCTOOLS_CHROMIUM`.
+
+```sh
+npm ci --ignore-scripts
+npm run vendor
+python3 -m pip install -r scripts/requirements-test.txt
+python3 scripts/fixtures.py
+npm test
+npm run test:browser
+python3 scripts/image-oracle.py tests/fixtures tests/output/codecs
 ```
 
-The images are normally in:
+If using a separate Python environment, set `DOCTOOLS_PYTHON` to its interpreter before `npm test`. The test scripts can use the Codex bundled runtimes when available. Install a compatible Playwright Chromium with `npx playwright install chromium` when a bundled browser is unavailable. The browser suite starts its own loopback server, uses isolated contexts, and writes screenshots/downloads under ignored `tests/output/`.
 
-```text
-GreenMarine_D5.4_v1.0_old_docx/word/media/
+After changing runtime assets, regenerate the release inventory with `npm run release`. Its content digest changes the cache identity automatically, including changes to the service worker. `npm run release -- 2026.10.15.2` optionally changes the human-readable release label. The static tests reject stale hashes. `npm run vendor` also regenerates the release inventory.
+
+## Original command-line workflow
+
+The shell tools remain available on macOS:
+
+```sh
+./docx-unpack example.docx
 ```
 
-Compress those images with BestImager.
+This creates `example_docx/`. Optimize images in `example_docx/word/media/` with LightImage, keeping every filename and extension exactly the same. Then run:
 
-Important:
-- Keep every filename exactly the same.
-- Keep every extension exactly the same.
-- Do not add replacement files with new names.
-
-## 2. Repack
-
-```bash
-./docx-pack GreenMarine_D5.4_v1.0_old.docx GreenMarine_D5.4_v1.0_old_docx
+```sh
+./docx-pack example.docx example_docx
 ```
 
-This creates:
+This creates `example-compressed.docx`, copying the original archive and updating image entries. It refuses to overwrite an existing output. The original DOCX stays untouched. The PWA adds stricter validation and output-preservation checks; the CLI retains its existing behavior.
 
-```text
-GreenMarine_D5.4_v1.0_old-compressed.docx
-```
-
-The script copies the original DOCX and replaces only files already present under `word/media/`.
-
-The original DOCX is not modified.
+The full supported extension list is: Office DOCX/DOTX/PPTX/PPSX/POTX/XLSX/XLTX, Visio VSDX, KMZ, OpenDocument ODT/ODS/ODP/ODG/OTT/OTS/OTP/OTG, DRM-free EPUB, PDF, OpenRaster ORA, comics CBZ/CBR/CB7/CBT, ZIP/TAR/7z image collections and standalone PNG/JPEG. CBR/CB7/CBT downloads convert to CBZ even when conversion is larger; ZIP/TAR/7z keep their container. ORA is lossless-only. Macro-enabled, encrypted and signed documents are rejected. Unsupported images and opaque resources are preserved. Click any displayed format for a local description and application examples. This expansion was deployed on 2026-10-16.

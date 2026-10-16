@@ -1,0 +1,5 @@
+# Expected decoded fixture payloads are preserved as exact bytes.
+tests/fixtures/multiformat/*.bin binary
+# Byte-preserved PDF fixtures and upstream license notices must not be reformatted.
+tests/fixtures/multiformat/pdf/*.pdf binary
+web/vendor/pdfjs/**/LICENSE* -whitespace

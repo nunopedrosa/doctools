@@ -1,0 +1,37 @@
+// Editorial help, bundled locally. Sources are maintainer references, never fetched.
+const office='https://learn.microsoft.com/office/compatibility/office-file-format-reference';
+const entries={
+ docx:['Word document','A modern word-processing document containing text, formatting, comments and embedded images.',['Microsoft Word — create and edit','LibreOffice Writer — open and edit'],office],
+ dotx:['Word template','A reusable template for creating Word documents with preset formatting, layout and images.',['Microsoft Word — create and use templates'],office],
+ pptx:['PowerPoint presentation','An editable slide presentation that can contain photographs, diagrams, notes, charts and animations.',['Microsoft PowerPoint — create and edit','LibreOffice Impress — open and edit'],office],
+ ppsx:['PowerPoint slideshow','A presentation intended to open directly as a slideshow rather than in the slide editor.',['Microsoft PowerPoint — present and edit'],office],
+ potx:['PowerPoint template','A reusable slide template with predefined layouts, styles and potentially embedded images.',['Microsoft PowerPoint — create and use templates'],office],
+ xlsx:['Excel workbook','A spreadsheet workbook with cells, formulas, worksheets, charts and optional embedded images.',['Microsoft Excel — create and edit','LibreOffice Calc — open and edit'],office],
+ xltx:['Excel template','A reusable spreadsheet template for creating workbooks with preset sheets, formulas and formatting.',['Microsoft Excel — create and use templates'],office],
+ vsdx:['Visio drawing','An editable diagram containing shapes, connectors and pages, with optional embedded raster images.',['Microsoft Visio — create and edit'],'https://learn.microsoft.com/en-us/office/client-developer/visio/introduction-to-the-visio-file-formatvsdx'],
+ kmz:['Google Earth map','A packaged map containing KML geographic data and supporting files such as photographs, overlays and models.',['Google Earth — open and create map packages'],'https://developers.google.com/kml/documentation/kmzarchives'],
+ cbz:['ZIP comic archive','A comic or scanned book whose page images and optional comic metadata are packed into a ZIP archive.',['SumatraPDF — read on Windows','YACReader — read on desktop'],'https://www.sumatrapdfreader.org/docs/Comics-and-manga'],
+ cbr:['RAR comic archive','A comic or scanned book whose page images and optional comic metadata are packed into a RAR archive.',['SumatraPDF — read on Windows','YACReader — read on desktop'],'https://www.sumatrapdfreader.org/docs/Comics-and-manga'],
+ cb7:['7z comic archive','A comic or scanned book whose page images and optional comic metadata are packed into a 7z archive.',['SumatraPDF — read on Windows','YACReader — read on desktop'],'https://www.sumatrapdfreader.org/docs/Comics-and-manga'],
+ cbt:['TAR comic archive','A comic or scanned book whose page images and optional comic metadata are packed into a TAR archive.',['SumatraPDF — read on Windows'],'https://www.sumatrapdfreader.org/docs/Comics-and-manga'],
+ zip:['ZIP image collection','A general-purpose archive of files and folders. Smaller optimizes supported images while retaining other ordinary files.',['7-Zip — create and extract archives'],'https://www.7-zip.org/'],
+ tar:['TAR image collection','An archive that groups files and folders, often without additional compression. This support covers ordinary TAR and PAX archives.',['7-Zip — create and extract TAR archives'],'https://www.7-zip.org/'],
+ '7z':['7z image collection','A compressed archive containing files and folders, often using LZMA compression for efficient storage.',['7-Zip — create and extract archives'],'https://www.7-zip.org/7z.html'],
+ ora:['OpenRaster artwork','Layered artwork containing PNG layer images, a layer stack, a merged composite and a thumbnail.',['Krita — create and edit','MyPaint — create and edit'],'https://www.openraster.org/baseline/file-layout-spec.html'],
+ epub:['EPUB ebook','An electronic book containing text, styles, navigation, images and fonts in a packaged publication.',['Calibre — read and manage ebooks','SumatraPDF — read unencrypted EPUB'],'https://www.sumatrapdfreader.org/docs/Supported-document-formats'],
+ pdf:['PDF document','A fixed-layout document used for sharing and printing pages containing text, fonts, images and interactive features.',['Adobe Acrobat Reader — open and read','Apple Preview — open and read'],'https://helpx.adobe.com/reader.html'],
+ png:['PNG image','A raster image format commonly used for screenshots, diagrams and graphics with transparency.',['Apple Preview — open and edit','GIMP — open and edit'],'https://support.apple.com/guide/preview/welcome/mac'],
+ jpg:['JPEG image','A photographic image format using JPEG compression. JPG and JPEG are two extensions for the same image format.',['Apple Preview — open and edit','GIMP — open and edit'],'https://support.apple.com/guide/preview/welcome/mac'],
+ jpeg:['JPEG image','A photographic image format using JPEG compression. JPEG and JPG are two extensions for the same image format.',['Apple Preview — open and edit','GIMP — open and edit'],'https://support.apple.com/guide/preview/welcome/mac']
+};
+for(const [ext,app,type,template] of [['odt','Writer','text document',false],['ods','Calc','spreadsheet',false],['odp','Impress','presentation',false],['odg','Draw','drawing',false],['ott','Writer','text document',true],['ots','Calc','spreadsheet',true],['otp','Impress','presentation',true],['otg','Draw','drawing',true]])entries[ext]=['OpenDocument '+type+(template?' template':''),'An open-standard '+type+(template?' template used to create new files with reusable content and formatting.':' containing editable content, formatting and optional embedded images.'),['LibreOffice '+app+' — create and edit'+(template?' templates':'')],'https://www.libreoffice.org/discover/what-is-opendocument/'];
+export const FORMAT_HELP=Object.freeze(Object.fromEntries(Object.entries(entries).map(([ext,[title,description,applications,source]])=>{
+ let policy='Output stays .'+ext+'. Supported embedded images are optimized without resizing. Exact lossless is the default; optional quality reduction can change image detail. Originals stay untouched.';
+ if(['cbr','cb7','cbt'].includes(ext))policy='Converts to an optimized .CBZ. Page names, order, folders and ordinary metadata files are retained. Output can be larger; archive metadata and reader-specific ordering may differ.';
+ if(ext==='ora')policy='Output stays .ora. Exact lossless optimization only: layer pixels, transparency, the stored composite and thumbnail stay consistent. Quality reduction is disabled.';
+ if(ext==='pdf')policy='Output stays .pdf. Optimizes eligible embedded JPEG images and lossless structure; other image encodings remain unchanged. Text and document features are preserved. Encrypted and signed PDFs are excluded.';
+ if(ext==='epub')policy+=' DRM/encrypted books and signed publications are excluded; standard font obfuscation is retained.';
+ if(['docx','dotx','pptx','ppsx','potx','xlsx','xltx','vsdx'].includes(ext))policy+=' Macro-enabled, encrypted and signed packages are excluded.';
+ if(['png','jpg','jpeg'].includes(ext))policy='Output stays in the original image format and dimensions. Exact lossless is the default. Optional PNG colour or JPEG quality reduction may alter fine detail; inspect the before/after preview.';
+ return [ext,Object.freeze({title:ext.toUpperCase()+' — '+title,description,applications:Object.freeze(applications),policy,sources:Object.freeze([source])})];
+})));

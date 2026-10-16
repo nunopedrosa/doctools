@@ -90,4 +90,4 @@ Keep the README aligned with operation, limits, dependency preparation, local se
 
 ## Approval state
 
-The in-chat proposal was approved on 2026-10-15. This written specification is prepared for review before creating the detailed implementation plan. No product implementation is included in this design change.
+The in-chat proposal was approved on 2026-10-15. The written specification was subsequently approved, followed by the implementation plan and native execution. See `docs/VERIFICATION.md` for implementation evidence and remaining verification.

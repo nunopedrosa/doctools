@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {inspectFile,optimizeFile} from '../web/core/files.js';import {fixture,assertProtectedZip} from './helpers/formats.mjs';
+test('valid package-root main document has valid root-folder relationships',async()=>{const src=await fixture('multiformat/root-main.docx');const info=await inspectFile(src,'root.docx');assert.equal(info.images.length,3);const out=await optimizeFile(src,'root.docx');await assertProtectedZip(src,out.bytes,out.images);});
