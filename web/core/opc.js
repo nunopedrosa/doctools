@@ -24,9 +24,9 @@ export async function validateOpc(archive){
  for(const e of archive.entries){if(e.directory||e.name==='[Content_Types].xml')continue;const type=overrides.get(e.name)||defaults.get(e.name.split('.').pop().toLowerCase());if(!type)throw Error('Missing content type: '+e.name);types.set(e.name,type);}
  const relationships=[];
  for(const e of archive.entries.filter(e=>e.name.endsWith('.rels'))){
-  const root=e.name==='_rels/.rels',mark=e.name.lastIndexOf('/_rels/');
-  if(!root&&mark<0)throw Error('Invalid relationships path');
-  const folder=root?'':e.name.slice(0,mark),owner=root?null:folder+'/'+e.name.slice(mark+7,-5);
+  const root=e.name==='_rels/.rels',atRoot=e.name.startsWith('_rels/'),mark=e.name.lastIndexOf('/_rels/');
+  if(!root&&!atRoot&&mark<0)throw Error('Invalid relationships path');
+  const folder=root||atRoot?'':e.name.slice(0,mark),owner=root?null:(folder?folder+'/':'')+e.name.slice(atRoot?6:mark+7,-5);
   if(owner&&!names.has(owner))throw Error('Missing relationship source: '+owner);
   const rels=parseXml(await archive.read(e.name));if(rels.documentElement.localName!=='Relationships'||rels.documentElement.namespaceURI!==REL)throw Error('Invalid relationships part');
   const ids=new Set();

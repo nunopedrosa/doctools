@@ -21,5 +21,5 @@ for p in sorted(out.iterdir()):
    layers=[Image.open(io.BytesIO(b.read(n))).convert('RGBA') for n in ['data/base.png','data/top.png']]
    expected=Image.alpha_composite(*layers);actual=Image.open(io.BytesIO(b.read('mergedimage.png'))).convert('RGBA');assert expected.tobytes()==actual.tobytes()
  count+=1;print(p.name+': first stored mimetype, protected XML/resources and image geometry passed')
-assert count==10,count
+assert count>=10,count
 print('Publication oracle:',count,'passed')

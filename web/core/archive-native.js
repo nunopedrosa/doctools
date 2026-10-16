@@ -1,3 +1,4 @@
+import {boundedZipWriter,checkZipHeaderBudget} from './bounded-writer.js';
 import {validateTarHeaders} from './tar-headers.js';
 import {validateRarHeaders,updateRarCrc} from './rar-headers.js';
 import {LIMITS,checkLimit} from './limits.js';import {safeEntryName} from './paths.js';
@@ -37,7 +38,7 @@ export async function openNativeArchive(bytes,container,custom={}){
  function string(value,allocated){const b=encoder.encode(value+'\0'),p=m._malloc(b.length);if(!p)throw Error('Archive memory limit reached');m.HEAPU8.set(b,p);allocated.push(p);return p;}
  async function rewrite(replacements,outputContainer){
   check();if(outputContainer==='zip'){
-   const {ZipWriter,Uint8ArrayWriter,Uint8ArrayReader}=await import('../vendor/zip.js');const writer=new ZipWriter(new Uint8ArrayWriter(),{useWebWorkers:false});
+   checkZipHeaderBudget(entries,limits.total);const {ZipWriter,Uint8ArrayReader}=await import('../vendor/zip.js');const writer=new ZipWriter(boundedZipWriter(limits.total),{useWebWorkers:false});
    for(const e of entries){const src=replacements.get(e.name)||await read(e.name),md=e.metadata;
     await writer.add(e.name,new Uint8ArrayReader(src),{directory:e.directory,lastModDate:new Date(Math.max(315532800,md.times&1?md.mtime:315532800)*1000),externalFileAttributes:(md.mode<<16)>>>0,uid:md.uid,gid:md.gid,level:6});
    }

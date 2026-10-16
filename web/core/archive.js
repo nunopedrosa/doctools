@@ -1,4 +1,5 @@
-import {ZipReader,ZipWriter,Uint8ArrayReader,Uint8ArrayWriter,configure} from '../vendor/zip.js';
+import {boundedZipWriter,checkZipHeaderBudget} from './bounded-writer.js';
+import {ZipReader,ZipWriter,Uint8ArrayReader,configure} from '../vendor/zip.js';
 import {LIMITS,checkLimit} from './limits.js';
 configure({useWebWorkers:false});
 export async function readArchive(bytes,custom={}){
@@ -31,8 +32,9 @@ export async function readArchive(bytes,custom={}){
   return archive;
  }catch(error){await reader.close();throw error;}
 }
-export async function rewriteArchive(archive,replacements){
- const writer=new ZipWriter(new Uint8ArrayWriter(),{useWebWorkers:false});
+export async function rewriteArchive(archive,replacements,options={}){
+ const limit=options.output??LIMITS.total;checkZipHeaderBudget(archive.entries,limit);
+ const writer=new ZipWriter(boundedZipWriter(limit),{useWebWorkers:false});
  for(const e of archive.entries){
   const replacement=replacements.get(e.name);
   const source=replacement||await archive.raw(e.name);

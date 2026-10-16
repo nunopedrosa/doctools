@@ -41,3 +41,17 @@ write('traversal.ora','image/openraster',{**p,'stack.xml':stack.replace('data/to
 write('damaged.ora','image/openraster',{**p,'data/top.png':b'not png'})
 (O/'ora-as-zip.zip').write_bytes((O/'layers.ora').read_bytes())
 print('Generated ODF, EPUB and ORA structural fixtures')
+# Reader/conformance fixtures omit synthetic opaque font bytes and executable content.
+for version in ['2.0','3.0']:
+ p=epub(version);p['Book/chapter.xhtml']=p['Book/chapter.xhtml'].replace('<script>fetch("https://example.invalid/never-execute")</script>','')
+ p.pop('Book/font.otf');p['Book/package.opf']=p['Book/package.opf'].replace('<item id="font" href="font.otf" media-type="font/otf"/>','')
+ if version=='3.0':
+  p['Book/package.opf']=p['Book/package.opf'].replace('</metadata>','<meta property="dcterms:modified">2026-01-01T00:00:00Z</meta></metadata>').replace('</manifest>','<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/></manifest>')
+  p['Book/nav.xhtml']='<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Contents</title></head><body><nav epub:type="toc"><ol><li><a href="chapter.xhtml">Chapter</a></li></ol></nav></body></html>'
+ else:
+  p['Book/package.opf']=p['Book/package.opf'].replace('<spine>','<spine toc="ncx">').replace('</manifest>','<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/></manifest>')
+  p['Book/toc.ncx']='<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1"><head><meta name="dtb:uid" content="urn:uuid:synthetic"/><meta name="dtb:depth" content="1"/><meta name="dtb:totalPageCount" content="0"/><meta name="dtb:maxPageNumber" content="0"/></head><docTitle><text>Fixture</text></docTitle><navMap><navPoint id="chapter" playOrder="1"><navLabel><text>Chapter</text></navLabel><content src="chapter.xhtml"/></navPoint></navMap></ncx>'
+ p['Book/images/texture-one.png']=p.pop('Book/images/texture one.png')
+ for name in list(p):
+  if isinstance(p[name],str):p[name]=p[name].replace('urn:uuid:synthetic','urn:uuid:550e8400-e29b-41d4-a716-446655440000').replace('texture%20one.png','texture-one.png').replace('<img src=','<p><img src=').replace('alt=""/>','alt=""/></p>')
+ write('conformant-'+version[0]+'.epub','application/epub+zip',p)

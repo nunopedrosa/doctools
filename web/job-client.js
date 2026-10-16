@@ -20,6 +20,7 @@ export function createJobClient(onMessage){
   },
   optimize(options={}){if(worker){deadline();worker.postMessage({id,type:'optimize',options});}},
   preview(previewId){if(worker){deadline();worker.postMessage({id,type:'preview',previewId});}},
+  pagePreview(){if(worker){deadline();worker.postMessage({id,type:'page-preview'});}},
   cancel:clear,clear,
  };
 }

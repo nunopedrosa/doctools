@@ -1,6 +1,6 @@
 # Doctools
 
-Compress Word documents/templates (DOCX/DOTX), PowerPoint presentations/slideshows/templates (PPTX/PPSX/POTX), Excel workbooks/templates (XLSX/XLTX), Visio drawings (VSDX), Google Earth maps (KMZ), or individual PNG/JPEG images without resizing. Choose exact lossless optimization or optional PNG color/JPEG quality reduction with a before/after preview. Processing runs on your device. The PWA downloads a separate optimized file and keeps the original untouched.
+Optimize Office documents and templates, Visio, OpenDocument, EPUB, PDF, OpenRaster artwork, KMZ maps, comic archives, ZIP/TAR/7z image collections and individual PNG/JPEG images locally, without resizing. Exact lossless optimization is the default; optional PNG color/JPEG quality reduction includes before/after previews. OpenRaster is lossless-only. Originals stay untouched.
 
 ## Run locally
 
@@ -14,14 +14,14 @@ Open [Doctools locally](http://127.0.0.1:8000/). Use the same port for later vis
 
 1. Select or drop one supported file and wait for its summary. Each extension in the supported-format list opens an offline description with example applications.
 2. Keep **Exact lossless** for the original quality, or choose **Smaller file (quality reduction)**. For PNGs, select a palette size (128 by default). For JPEGs, select an encoder quality (70 by default; higher values keep more detail). Packages show controls for their embedded PNG/JPEG images.
-3. Optimize, review the image report, and choose **Preview** for changed images. Compare at fit size or **100% — actual pixels**, with synchronized scrolling. Download a separate `name-compressed` file in its original format if the complete result is smaller. Changing mode or settings clears the old result; optimize again to apply the change.
+3. Optimize, review the image report, and choose **Preview** for changed images. Compare at fit size or **100% — actual pixels**, with synchronized scrolling. Download a separate `name-compressed` file in its original format if the complete result is smaller. CBR/CB7/CBT convert to CBZ with a `-converted` filename, including when conversion makes the archive larger. PDFs also offer a bounded page comparison. Changing mode or settings clears the old result; optimize again to apply the change.
 4. Choose **Clear** to release the current file and result. **Cancel** stops processing; select a file to start again.
 
-If the complete package does not shrink, the app retains the original bytes and reports no reduction. It does not offer an unchanged file as a compressed download.
+If the complete package does not shrink, the app retains the original bytes and reports no reduction. It does not offer an unchanged file as a compressed download. Comic format conversion remains downloadable with its size increase shown explicitly.
 
 ## Offline use and installation
 
-Keep the page open until **Ready offline** appears. This confirms that the app controls the page and has cached its interface, worker and image codecs. You can then reopen the same address and process new documents or standalone images offline. Browser cache eviction or clearing site data removes offline availability; reconnect to the local server and reload to repair missing assets.
+Keep the page open until **Ready offline** appears. This confirms that the app controls the page and has cached its interface, workers, image codecs and all advertised format engines. You can then reopen the same address and process new documents or standalone images offline. Browser cache eviction or clearing site data removes offline availability; reconnect to the local server and reload to repair missing assets.
 
 Install from Chrome/Edge's app installation menu, or Safari's **File → Add to Dock** on Mac. Installation is optional; browser use has the same processing features. Firefox can use the offline browser app, with installation options depending on platform.
 
@@ -96,4 +96,4 @@ This creates `example_docx/`. Optimize images in `example_docx/word/media/` with
 
 This creates `example-compressed.docx`, copying the original archive and updating image entries. It refuses to overwrite an existing output. The original DOCX stays untouched. The PWA adds stricter validation and output-preservation checks; the CLI retains its existing behavior.
 
-The development expansion supports Office DOCX/DOTX/PPTX/PPSX/POTX/XLSX/XLTX, Visio VSDX, KMZ, OpenDocument ODT/ODS/ODP/ODG/OTT/OTS/OTP/OTG, DRM-free EPUB, OpenRaster ORA, comics CBZ/CBR/CB7/CBT, ZIP/TAR/7z image collections and standalone PNG/JPEG. CBR/CB7/CBT downloads convert to CBZ even when conversion is larger; ZIP/TAR/7z keep their container. ORA is lossless-only. Macro-enabled, encrypted and signed documents are rejected. Unsupported images and opaque resources are preserved. Click any displayed format for a local description and application examples. This expansion has not been deployed.
+The full supported extension list is: Office DOCX/DOTX/PPTX/PPSX/POTX/XLSX/XLTX, Visio VSDX, KMZ, OpenDocument ODT/ODS/ODP/ODG/OTT/OTS/OTP/OTG, DRM-free EPUB, PDF, OpenRaster ORA, comics CBZ/CBR/CB7/CBT, ZIP/TAR/7z image collections and standalone PNG/JPEG. CBR/CB7/CBT downloads convert to CBZ even when conversion is larger; ZIP/TAR/7z keep their container. ORA is lossless-only. Macro-enabled, encrypted and signed documents are rejected. Unsupported images and opaque resources are preserved. Click any displayed format for a local description and application examples. This expansion has not been deployed.

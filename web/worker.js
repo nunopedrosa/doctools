@@ -10,6 +10,7 @@ self.onmessage=async({data})=>{
   }else if(data.type==='optimize'&&data.id===id&&session){
    const result=await session.optimize(data.options,p=>self.postMessage({id,type:'progress',...p}));images=result.images;
    result.bytes=result.bytes.slice();self.postMessage({id,type:'result',result},[result.bytes.buffer]);
+  }else if(data.type==='page-preview'&&data.id===id&&session?.pagePreview){const pair=await session.pagePreview();self.postMessage({id,type:'page-preview',...pair},[pair.before.buffer,pair.after.buffer]);
   }else if(data.type==='preview'&&data.id===id&&session){
    // Compatibility with the old page's path messages is limited to known result rows.
    const previewId=data.previewId||images.find(i=>i.path===data.path)?.previewId;

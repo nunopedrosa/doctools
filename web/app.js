@@ -1,3 +1,4 @@
+import {createPdfPreview} from './pdf-preview.js';
 import {resultPresentation} from './result-view.js';
 import {enabledFormats} from './core/formats.js';
 import {setupFormatHelp} from './format-help.js';
@@ -6,16 +7,17 @@ import {createJobClient} from './job-client.js';
 import {createPreview} from './preview.js';
 const $=id=>document.getElementById(id);
 let file=null,url=null,busy=false,locked=false,lockedControls=null,resultReady=false,inspected=false,fileKind='document',fileExtension='docx',fileModes=['lossless','colors'],qualityControls=['colors','jpeg-quality'];
-const preview=createPreview();
+const preview=createPreview(),pdfPreview=createPdfPreview();
 const formats=enabledFormats();
 setupFormatHelp({formats,container:$('format-list'),dialog:$('format-dialog')});
 $('file').accept=formats.map(f=>'.'+f.extension).join(',');
 const bytes=n=>n<1024?n+' B':n<1024*1024?(n/1024).toFixed(1)+' KiB':(n/1024/1024).toFixed(2)+' MiB';
-function release(){preview.clear();resultReady=false;if(url)URL.revokeObjectURL(url);url=null;$('download-slot').replaceChildren();$('result').hidden=true;$('report').hidden=true;$('images').replaceChildren();}
+function release(){pdfPreview.clear();preview.clear();resultReady=false;if(url)URL.revokeObjectURL(url);url=null;$('download-slot').replaceChildren();$('result').hidden=true;$('report').hidden=true;$('images').replaceChildren();}
 function setBusy(value){busy=value;$('cancel').hidden=!value;$('clear').disabled=value||locked;$('optimize').disabled=value||locked||resultReady||!file;for(const id of ['mode','colors','jpeg-quality'])$(id).disabled=value||locked;for(const button of $('images').querySelectorAll('button'))button.disabled=value||locked;document.dispatchEvent(new CustomEvent('doctools-busy',{detail:value}));}
 function status(message){$('status').textContent=message;}
 function error(message){inspected=false;setBusy(false);$('progress').hidden=true;$('error').textContent=message;$('error').hidden=false;$('optimize').disabled=true;status('Choose another file to continue.');}
 const jobs=createJobClient(data=>{
+ if(data.type==='page-preview'){setBusy(false);pdfPreview.show(data);return;}
  if(data.type==='preview'||data.type==='preview-error'){setBusy(false);if(data.type==='preview')preview.show(data);else preview.error(data.message);status('Finished. Your original file is unchanged.');return;}
  if(data.type==='error'){error(data.message);return;}
  if(data.type==='inspected'){
@@ -30,6 +32,7 @@ const jobs=createJobClient(data=>{
   resultReady=true;
   setBusy(false);$('progress').hidden=true;$('result').hidden=false;$('optimize').disabled=true;
   const r=data.result,view=resultPresentation(file.name,file.size,r);
+  $('pdf-pages').hidden=fileExtension!=='pdf';
   $('result-title').textContent=view.title;
   $('savings').textContent=view.savings;
   $('result-warnings').textContent=(r.warnings||[]).join(' ');$('result-warnings').hidden=!r.warnings?.length;
@@ -53,6 +56,7 @@ function select(selected){
 }
 $('file').addEventListener('change',e=>select(e.target.files[0]));
 $('optimize').addEventListener('click',()=>{if(busy||locked||!inspected)return;release();setBusy(true);$('progress').hidden=false;$('progress').removeAttribute('value');status('Optimizing images…');jobs.optimize({mode:$('mode').value,colors:Number($('colors').value),jpegQuality:Number($('jpeg-quality').value)});});
+$('pdf-pages').addEventListener('click',()=>{if(busy||locked)return;pdfPreview.loading();setBusy(true);jobs.pagePreview();});
 $('cancel').addEventListener('click',()=>clearDocument('Cancelled. Select a file to start again.'));
 function renderSettings(){
  $('mode').querySelector('option[value="colors"]').disabled=!fileModes.includes('colors');
@@ -76,4 +80,4 @@ $('dropzone').addEventListener('drop',e=>{e.preventDefault();$('dropzone').class
 window.addEventListener('pagehide',()=>clearDocument('Select a file to start again.'));
 window.addEventListener('pageshow',event=>{if(event.persisted)clearDocument('Select a file to start again.');});
 
-setupOffline({isBusy:()=>busy,setLocked:value=>{if(value&&!locked)lockedControls=['file','optimize','clear','mode','colors','jpeg-quality'].map(id=>[id,$(id).disabled]);locked=value;if(value)for(const id of ['file','optimize','clear','mode','colors','jpeg-quality'])$(id).disabled=true;else if(lockedControls){for(const [id,disabled] of lockedControls)$(id).disabled=disabled;lockedControls=null;}},status:$('offline-status'),updateButton:$('update')});
+setupOffline({isBusy:()=>busy||pdfPreview.isBusy(),setLocked:value=>{if(value&&!locked)lockedControls=['file','optimize','clear','mode','colors','jpeg-quality'].map(id=>[id,$(id).disabled]);locked=value;if(value)for(const id of ['file','optimize','clear','mode','colors','jpeg-quality'])$(id).disabled=true;else if(lockedControls){for(const [id,disabled] of lockedControls)$(id).disabled=disabled;lockedControls=null;}},status:$('offline-status'),updateButton:$('update')});

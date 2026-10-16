@@ -1,5 +1,25 @@
 [
   {
+    "name": "pdf.js",
+    "bytes": 29191,
+    "sha256": "8b753f0e922e4497cfa3630d6ace7b3d6aee19e5c31512ac9eeb8876cebdcdda"
+  },
+  {
+    "name": "pdf.wasm",
+    "bytes": 1429669,
+    "sha256": "a450a7be19ad288d181c6806a47a77b81ef23758f9af64fbfa1d39deb07198a7"
+  },
+  {
+    "name": "pdfjs/pdf.js",
+    "bytes": 491172,
+    "sha256": "6db36b9832ea6bb24ee2eb6abecf72f034885818aee1819f49c849250d01ba29"
+  },
+  {
+    "name": "pdfjs/pdf.worker.js",
+    "bytes": 1247426,
+    "sha256": "370a4784af71d1508d9d7baf5ade92e543116d1d646821b3265d90b962e68e4e"
+  },
+  {
     "name": "upng.js",
     "bytes": 64489,
     "sha256": "82ed60b510b2c74faca97c84937fb6ea732955d19d7e96af364068d54abe0db4"

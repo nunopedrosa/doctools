@@ -2,6 +2,7 @@ import {formatForName} from './formats.js';
 import {checkLimit} from './limits.js';
 export async function openFile(bytes,name){
  const format=formatForName(name);checkLimit(bytes.length,(format.kind==='image'?50:100)*1024*1024,'Input file');
+ if(format.family==='pdf')return (await import('./pdf.js')).openPdfSession(bytes,format);
  if(format.kind==='image'){
   const {openImageSession}=await import('./image-session.js');const s=await openImageSession(bytes,format);return namedSession(s,name);
  }

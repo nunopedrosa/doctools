@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {openPdf} from '../web/core/pdf-engine.js';import {fixture} from './helpers/formats.mjs';
+const load=async(n,limits)=>openPdf(await fixture('multiformat/pdf/'+n+'.pdf'),limits);
+test('PDF scans shared resources once and respects close',async()=>{const h=await load('shared-images');try{const r=await h.inspect();assert.equal(r.pages,2);assert.equal(r.images.filter(i=>i.eligible).length,1);const snap=await h.snapshot();assert.ok(Object.keys(snap.objects).length>=8);}finally{await h.close();await h.close();}await assert.rejects(()=>h.inspect(),/closed/);});
+for(const n of ['signed-field','encrypted-empty-password','invalid-xref'])test('reject unsafe PDF '+n,async()=>{await assert.rejects(()=>load(n));});
+test('masked image is retained',async()=>{const h=await load('masked');try{assert.equal((await h.inspect()).images[0].eligible,false);}finally{await h.close();}});
+test('PDF budgets reject before successful inspection',async()=>{for(const limits of [{objects:3},{pages:0},{decoded:10}])await assert.rejects(()=>load('features',limits));});
+test('unsupported raw image stream encoding remains unchanged',async()=>{const h=await load('raw-image');try{const before=await h.snapshot(),r=await h.write(),b=await openPdf(r.bytes);try{const after=await b.snapshot();assert.deepEqual(before.objects['5 0'].value.dict,after.objects[r.mapping['5 0']].value.dict);}finally{await b.close();}}finally{await h.close();}});

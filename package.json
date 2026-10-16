@@ -10,7 +10,8 @@
     "test:browser": "node tests/browser.mjs && node tests/release-transition.mjs && node tests/format-help-browser.mjs",
     "test:help": "node tests/format-help-browser.mjs",
     "test:formats": "node tests/formats-browser.mjs",
-    "test:archive-engine": "node tests/archive-engine-browser.mjs"
+    "test:archive-engine": "node tests/archive-engine-browser.mjs",
+    "test:pdf": "node tests/pdf-browser.mjs"
   },
   "devDependencies": {
     "@jsquash/oxipng": "2.3.0",
@@ -18,6 +19,7 @@
     "@xmldom/xmldom": "0.9.12",
     "@zip.js/zip.js": "2.23.0",
     "esbuild": "0.28.2",
+    "pdfjs-dist": "6.4.299",
     "playwright": "1.62.1",
     "upng-js": "2.1.0"
   }

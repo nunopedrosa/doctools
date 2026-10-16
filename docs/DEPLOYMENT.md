@@ -120,3 +120,7 @@ When staging from an existing hosted release, copy only the checksum-manifest al
 The complete hosted smoke test passed after cache-policy propagation: all 42 asset hashes, MIME types, revalidation headers and private-path checks passed. Chromium 153.0.8010.12 reached **Ready offline**, reopened offline, then compressed synthetic JPEG, PNG and DOCX fixtures with working image previews. Standalone downloads matched local codec outputs. Only runtime assets were cached, and no file uploads or external app requests occurred. Outputs/screenshots are under ignored `tests/output/live/`.
 
 No changes were made to Agenda's application, database, DNS or cache rule. The shared zone SSL mode was inspected without modification. Runtime binary revalidation was not bypassed to make these checks pass.
+
+## Multi-format development status
+
+The 30-extension expansion is a separate local development release on `codex/multiformat`. It has not been deployed; the production release recorded above remains unchanged. Deployment requires the complete new `web/` inventory (including QPDF, archive and PDF.js binaries/resources/licenses), regenerated hashes and a new verified release. Do not copy only HTML/JS from this expansion onto the older release.
