@@ -1,6 +1,12 @@
 # Doctools verification
 
-Verification date: 2026-10-16. Application tests below are local development checks. Runtime files have subsequently been deployed to smaller.basecentral.link; trusted HTTPS and live offline verification are pending DreamHost's certificate order. See [the deployment record](DEPLOYMENT.md).
+Verification date: 2026-10-16. Local application checks and final hosted HTTPS/offline checks passed. See [the deployment record](DEPLOYMENT.md).
+
+## Hosted verification
+
+`node tests/live.mjs https://smaller.basecentral.link/` passed against runtime `2026.10.16.1-021043170764` in Chromium 153.0.8010.12. All 42 public runtime assets matched local SHA-256 hashes, with correct MIME types and `no-cache` headers. Private repository/configuration paths were inaccessible. Public TLS and direct-origin TLS both validated normally.
+
+A fresh browser reached **Ready offline**, disconnected, reopened the page, and compressed synthetic standalone JPEG, PNG and DOCX files. Downloads were smaller; standalone outputs matched the local codec results and before/after previews loaded. Only app assets appeared in Cache Storage; recorded app requests contained no uploads or external destinations. Screenshots and outputs are in ignored `tests/output/live/`. This does not establish physical-device or installed-PWA compatibility.
 
 ## Automated checks
 

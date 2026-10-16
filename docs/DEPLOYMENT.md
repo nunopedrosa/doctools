@@ -59,9 +59,9 @@ Use a fresh temporary link name if `current.next` already exists. Confirm the cu
 
 The `smaller` A record must point to `75.119.207.108`; do not copy Agenda's `75.119.200.187` address. Keep it DNS-only while the certificate is being issued. DreamHost must have the domain configured under `basecentral` with a trusted certificate for `smaller.basecentral.link`. Use its free Let's Encrypt certificate with automatic renewal. Check that the order is Active before calling HTTPS/PWA installation ready. The `.well-known/acme-challenge/` path remains exempt from the app's HTTP redirect for certificate issuance/renewal.
 
-`web/.htaccess` supplies the index, disables directory listings, declares WASM/JavaScript/manifest MIME types, requests `Cache-Control: no-cache` and redirects HTTP to the fixed HTTPS hostname. The app's service worker supplies the verified offline cache. Do not use long browser cache TTLs for mutable module URLs or `release.js`/`sw.js`.
+`web/.htaccess` supplies the index, disables directory listings, declares WASM/JavaScript/manifest MIME types, disables inherited `mod_expires` rules, removes duplicate cache/expiry headers, sends `Cache-Control: no-cache` and redirects HTTP to the fixed HTTPS hostname. The app's service worker supplies the verified offline cache. Do not use long browser cache TTLs for mutable module URLs or `release.js`/`sw.js`.
 
-If you later enable the Cloudflare proxy, use Full (strict) and a rule scoped only to `smaller.basecentral.link` that bypasses CDN caching and respects the origin browser TTL, as used for Agenda. Do not change other applications' DNS, certificates or cache rules. Do not use Flexible SSL or disable certificate verification to hide a broken origin certificate.
+With the Cloudflare proxy enabled, prefer Full (strict) and use a rule scoped only to `smaller.basecentral.link` that bypasses CDN caching and respects the origin browser TTL, as used for Agenda. Do not change other applications' DNS, certificates or cache rules. Do not use Flexible SSL or disable certificate verification to hide a broken origin certificate.
 
 Official references: [DreamHost Let's Encrypt setup](https://help.dreamhost.com/hc/en-us/articles/216539548-Adding-a-free-Let-s-Encrypt-certificate), [Cloudflare browser cache TTL](https://developers.cloudflare.com/cache/how-to/edge-browser-cache-ttl/).
 
@@ -98,22 +98,25 @@ To undo first publication completely, retain the deployed release, remove only t
 - Source commit: `d9943ba` (application implementation `9485f27`, plus hosting configuration).
 - Uploaded archive SHA-256: `bfde0afd62347c0daa77f163e04e9313d9afe11f4207c5d1999a72c27c8cacdb`.
 - Verified all 43 published files remotely: 42 runtime assets plus `.htaccess`.
-- Active target: `/home/basecentral/smaller-app/releases/2026.10.16.1-021043170764/web`.
+- Initial target: `/home/basecentral/smaller-app/releases/2026.10.16.1-021043170764/web` (superseded by the configuration correction below).
 - Original defaults retained at `/home/basecentral/smaller.basecentral.link.before-smaller-20261015-233223` (backup filename uses UTC; activation was 00:32 on 2026-10-16 in Lisbon).
 - Private checksum/archive records: `/home/basecentral/smaller-app/incoming/2026.10.16.1-021043170764/`.
 - Local pre-publication checks: 68 unit tests, full Chromium browser/offline/update suite, and 12-image independent lossless oracle passed.
 
-Routing initially used Agenda's address, which returned DreamHost's default site. Querying DreamHost's own authoritative DNS established Smaller's distinct origin, `75.119.207.108`. Direct HTTP to that address with the Smaller hostname now returns the deployed `.htaccess` redirect and headers. The user corrected Cloudflare's Smaller A record; public DNS confirms the correct address, currently DNS-only. Cached answers may temporarily retain the old proxy addresses.
+Routing initially used Agenda's address, which returned DreamHost's default site. DreamHost's authoritative DNS established Smaller's distinct origin, `75.119.207.108`; the user corrected the record. The certificate was initially processing, and the first smoke test correctly stopped at normal TLS validation. That initial prerequisite is now resolved.
 
-The user reports the Let's Encrypt order is still processing, also observed in the DreamHost panel. The origin still presents a self-signed certificate. Runtime file publication is complete, but the app is **not yet verified ready for public HTTPS/offline use**. No certificate bypass or weakened SSL mode was used. No changes were made to Agenda's deployment, database, configuration, DNS or cache rule.
+## Final activation and verification — 2026-10-16
 
-The first explicit hosted smoke-test attempt stops at normal TLS validation with `DEPTH_ZERO_SELF_SIGNED_CERT`, before any browser/fixture work. This is an outstanding hosting prerequisite, not a passing live verification result.
+- Both the public HTTPS URL and the direct DreamHost origin validate with normal trusted TLS; no certificate bypass was used.
+- Smaller's A record points to `75.119.207.108`, with Cloudflare proxying enabled.
+- Active release: `/home/basecentral/smaller-app/releases/2026.10.16.1-021043170764-apache2`; `current` points to this directory. Runtime assets and version are unchanged.
+- Serving-configuration source: `3764897`; `.htaccess` SHA-256: `44486c8272cc41265e07adc34a85bf4bf63c367be487bd36956f4398359ba8b6`. All 43 files were checked against the release's private `SHA256SUMS` before activation.
+- Inherited Apache expiry rules originally added a second 30-day cache header. The corrected `.htaccess` disables those rules and sends a single `no-cache` header without `Expires`.
+- Cloudflare rule **smaller_cache** is Active: `(http.host eq "smaller.basecentral.link")`, cache eligibility **Bypass cache**, Browser TTL **Respect origin TTL**. This overrides the zone's four-hour browser TTL for Smaller. Agenda's existing rule is unchanged.
+- Cloudflare's zone encryption mode was observed as **Full**, with automatic mode enabled. Full (strict) remains the preferred setting; the zone-wide mode was left unchanged because it affects other applications. Direct-origin TLS was independently validated.
 
-Once DreamHost marks the certificate Active, verify the actual origin and run the complete public smoke test:
+When staging from an existing hosted release, copy only the checksum-manifest allowlist of regular files. DreamHost may inject a `.dh-diag` symlink into a hosted directory; recursive directory copying can follow host-managed links and fail. A failed private staging directory was retained as `2026.10.16.1-021043170764-apache2-incomplete`; it was never activated. The successful release excludes that injected diagnostic tree. The original complete release and defaults backup remain intact.
 
-```sh
-curl --resolve smaller.basecentral.link:443:75.119.207.108 -I https://smaller.basecentral.link/
-node tests/live.mjs https://smaller.basecentral.link/
-```
+The complete hosted smoke test passed after cache-policy propagation: all 42 asset hashes, MIME types, revalidation headers and private-path checks passed. Chromium 153.0.8010.12 reached **Ready offline**, reopened offline, then compressed synthetic JPEG, PNG and DOCX fixtures with working image previews. Standalone downloads matched local codec outputs. Only runtime assets were cached, and no file uploads or external app requests occurred. Outputs/screenshots are under ignored `tests/output/live/`.
 
-Both must succeed with normal TLS validation before marking publication verified. If proxying is re-enabled, additionally verify Full (strict) and the Smaller-only cache policy above. A valid Cloudflare edge certificate alone does not establish a trusted or correctly routed origin.
+No changes were made to Agenda's application, database, DNS or cache rule. The shared zone SSL mode was inspected without modification. Runtime binary revalidation was not bypassed to make these checks pass.
