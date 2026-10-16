@@ -1,0 +1,2 @@
+# Expected decoded fixture payloads are preserved as exact bytes.
+tests/fixtures/multiformat/*.bin binary
