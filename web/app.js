@@ -1,9 +1,12 @@
+import {enabledFormats} from './core/formats.js';
+import {setupFormatHelp} from './format-help.js';
 import {setupOffline} from './offline.js';
 import {createJobClient} from './job-client.js';
 import {createPreview} from './preview.js';
 const $=id=>document.getElementById(id);
 let file=null,url=null,busy=false,locked=false,lockedControls=null,resultReady=false,inspected=false,fileKind='document',fileExtension='docx';
 const preview=createPreview();
+setupFormatHelp({formats:enabledFormats(),container:$('format-list'),dialog:$('format-dialog')});
 const bytes=n=>n<1024?n+' B':n<1024*1024?(n/1024).toFixed(1)+' KiB':(n/1024/1024).toFixed(2)+' MiB';
 function release(){preview.clear();resultReady=false;if(url)URL.revokeObjectURL(url);url=null;$('download-slot').replaceChildren();$('result').hidden=true;$('report').hidden=true;$('images').replaceChildren();}
 function setBusy(value){busy=value;$('cancel').hidden=!value;$('clear').disabled=value||locked;$('optimize').disabled=value||locked||resultReady||!file;for(const id of ['mode','colors','jpeg-quality'])$(id).disabled=value||locked;for(const button of $('images').querySelectorAll('button'))button.disabled=value||locked;document.dispatchEvent(new CustomEvent('doctools-busy',{detail:value}));}
