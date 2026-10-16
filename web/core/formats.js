@@ -17,7 +17,7 @@ const rows=[
  ['pdf','PDF document','pdf','document','application/pdf'],
  ['png','PNG image','image','image','image/png'],['jpg','JPEG image','image','image','image/jpeg'],['jpeg','JPEG image','image','image','image/jpeg']
 ];
-const enabled=new Set(['docx','png','jpg','jpeg']);
+const enabled=new Set(['docx','dotx','pptx','ppsx','potx','xlsx','xltx','vsdx','kmz','png','jpg','jpeg']);
 export const FORMATS=Object.freeze(rows.map(([extension,label,family,kind,mime])=>Object.freeze({id:extension,extension,label,family,kind,mime,outputExtension:family==='comic'?'cbz':extension,outputMime:family==='comic'?'application/vnd.comicbook+zip':mime,outputLabel:family==='comic'?'CBZ':['jpg','jpeg'].includes(extension)?'JPEG':extension.toUpperCase(),modes:Object.freeze(extension==='ora'?['lossless']:['lossless','colors']),enabled:enabled.has(extension)})));
 export function enabledFormats(){return FORMATS.filter(f=>f.enabled);}
 export function formatForName(name){const ext=String(name).split('.').pop().toLowerCase(),f=FORMATS.find(f=>f.extension===ext&&f.enabled);if(!f)throw Error('Choose a supported document, archive or image file.');return f;}

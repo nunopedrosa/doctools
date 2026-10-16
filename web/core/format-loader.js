@@ -5,8 +5,9 @@ export async function openFile(bytes,name){
  if(format.kind==='image'){
   const {openImageSession}=await import('./image-session.js');const s=await openImageSession(bytes,format);return namedSession(s,name);
  }
- const [{openZipSession},{validatePackage}]=await Promise.all([import('./zip-session.js'),import('./package.js')]);
- return openZipSession(bytes,format,validatePackage);
+ const {openZipSession}=await import('./zip-session.js');
+ const validator=format.family==='kmz'?(await import('./kmz.js')).validateKmz:(await import('./office.js')).validateOffice;
+ return openZipSession(bytes,format,validator);
 }
 function namedSession(session,name){
  const inspect=session.inspect.bind(session),optimize=session.optimize.bind(session);
