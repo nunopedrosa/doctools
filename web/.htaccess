@@ -4,7 +4,14 @@ AddType application/wasm .wasm
 AddType text/javascript .js
 AddType application/manifest+json .webmanifest
 
+<IfModule mod_expires.c>
+  ExpiresActive Off
+</IfModule>
+
 <IfModule mod_headers.c>
+  Header unset Cache-Control
+  Header unset Expires
+  Header always unset Expires
   Header always set Cache-Control "no-cache"
   Header always set X-Content-Type-Options "nosniff"
 </IfModule>
