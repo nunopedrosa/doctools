@@ -1,3 +1,5 @@
+> Deployment command updated 2026-11-01: see [SHARED_DEPLOYMENT.md](SHARED_DEPLOYMENT.md). Shared core/profile supersedes older commands and broad deletion. Keep the app-specific hosting, private paths and release requirements below.
+
 # Deploying smaller.basecentral.link
 
 Doctools is a static application. Only `web/` is published. Files selected by visitors stay in browser memory; the server serves app assets only. No PHP, database, Node runtime, private document storage or background jobs are required.

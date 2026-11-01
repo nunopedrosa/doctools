@@ -97,3 +97,7 @@ This creates `example_docx/`. Optimize images in `example_docx/word/media/` with
 This creates `example-compressed.docx`, copying the original archive and updating image entries. It refuses to overwrite an existing output. The original DOCX stays untouched. The PWA adds stricter validation and output-preservation checks; the CLI retains its existing behavior.
 
 The full supported extension list is: Office DOCX/DOTX/PPTX/PPSX/POTX/XLSX/XLTX, Visio VSDX, KMZ, OpenDocument ODT/ODS/ODP/ODG/OTT/OTS/OTP/OTG, DRM-free EPUB, PDF, OpenRaster ORA, comics CBZ/CBR/CB7/CBT, ZIP/TAR/7z image collections and standalone PNG/JPEG. CBR/CB7/CBT downloads convert to CBZ even when conversion is larger; ZIP/TAR/7z keep their container. ORA is lossless-only. Macro-enabled, encrypted and signed documents are rejected. Unsupported images and opaque resources are preserved. Click any displayed format for a local description and application examples. This expansion was deployed on 2026-10-16.
+
+## Shared deployment command (2026-11-01)
+
+See [the current deployment contract](docs/SHARED_DEPLOYMENT.md) and `scripts/deploy-profile.sh`. This supersedes older script flags, SSH-only wrappers and broad deletion instructions below/above; hosting coordinates and app-specific private/release requirements still apply. No deployment is authorized by source changes.

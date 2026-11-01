@@ -39,14 +39,14 @@ const jobs=createJobClient(data=>{
   $('sizes').textContent=bytes(file.size)+' original / '+bytes(r.bytes.length)+' result';
   if(r.downloadAvailable){
    url=URL.createObjectURL(new Blob([r.bytes],{type:r.mime}));
-   const link=document.createElement('a');link.className='download';link.href=url;link.download=view.filename;link.textContent=view.downloadLabel;$('download-slot').append(link);
+   const link=document.createElement('a');link.className='download pwa-control';link.href=url;link.download=view.filename;link.textContent=view.downloadLabel;$('download-slot').append(link);
   }
   const labels={optimized:'Optimized',efficient:'Already efficient',unsupported:'Kept unchanged',failed:'Kept unchanged'};
   for(const image of r.images){
    const row=document.createElement('tr');
    for(const text of [image.path.replace('word/media/',''),labels[image.status],bytes(image.before),bytes(image.after)]){const cell=document.createElement('td');cell.textContent=text;row.append(cell);}
    const reason=document.createElement('small');reason.textContent=image.reason;row.children[1].append(reason);$('images').append(row);
-   if(image.perceptual||image.previewable){const button=document.createElement('button');button.type='button';button.textContent='Preview';button.setAttribute('aria-label','Preview '+image.path.replace('word/media/',''));button.addEventListener('click',()=>{if(busy||locked)return;preview.loading(image.path);setBusy(true);status('Loading image preview…');jobs.preview(image.previewId);});row.children[1].append(button);}
+   if(image.perceptual||image.previewable){const button=document.createElement('button');button.className='pwa-control';button.type='button';button.textContent='Preview';button.setAttribute('aria-label','Preview '+image.path.replace('word/media/',''));button.addEventListener('click',()=>{if(busy||locked)return;preview.loading(image.path);setBusy(true);status('Loading image preview…');jobs.preview(image.previewId);});row.children[1].append(button);}
   }
   $('report').hidden=!r.images.length;status('Finished. Your original file is unchanged.');
  }

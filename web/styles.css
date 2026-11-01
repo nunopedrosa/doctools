@@ -7,3 +7,7 @@
 .supported-formats{margin:1.5rem 0}.supported-formats h3{margin-bottom:.5rem}.format-list{display:flex;flex-wrap:wrap;gap:.4rem}.format-button{padding:.3rem .55rem;font-size:.9rem;border:1px solid #a8bbcd;border-radius:.35rem;background:#fff;color:#163653;text-decoration:underline;text-underline-offset:.2em}.format-dialog{position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(36rem,calc(100% - 2rem));max-height:85vh;overflow:auto;border:1px solid #a8bbcd;border-radius:.6rem;padding:1.5rem;background:#fff;color:#163653;box-shadow:0 1rem 4rem #16365340}.format-dialog:not([open]){display:none}.format-dialog::backdrop{background:#102a4380}.format-dialog h2{font-size:1.4rem;overflow-wrap:anywhere}.format-dialog h3{font-size:1rem;margin-top:1.2rem}.format-dialog p,.format-dialog li{line-height:1.6;overflow-wrap:anywhere}.format-dialog [data-format-close]{margin-top:.75rem}.format-dialog[aria-modal="true"][open]{z-index:1000}
 
 #pdf-preview canvas{max-width:100%;height:auto;background:white}#pdf-pages{margin-top:1rem}
+
+/* Shared controls 1.0.0: app-owned screen adapters. */
+@media screen {
+}

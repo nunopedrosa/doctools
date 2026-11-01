@@ -17,6 +17,6 @@ export function setupFormatHelp({formats,container,dialog}){
   const first=focusable[0],last=focusable[focusable.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
  }});
  dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');if(!native)dialog.hidden=true;
- container.replaceChildren();for(const format of formats){const button=document.createElement('button');button.type='button';button.className='format-button';button.textContent='.'+format.extension;button.setAttribute('aria-label','About .'+format.extension);button.addEventListener('click',()=>show(format,button));container.append(button);}
+ container.replaceChildren();for(const format of formats){const button=document.createElement('button');button.type='button';button.className='format-button pwa-control';button.textContent='.'+format.extension;button.setAttribute('aria-label','About .'+format.extension);button.addEventListener('click',()=>show(format,button));container.append(button);}
  return {close};
 }
